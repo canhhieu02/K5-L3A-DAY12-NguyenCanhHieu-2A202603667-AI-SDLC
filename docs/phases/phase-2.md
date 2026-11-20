@@ -175,7 +175,7 @@ Số chuẩn khai trong `tuning`:
 
 | Mục DoD | Đáp ứng bởi | Trạng thái |
 |---|---|---|
-| Bằng chứng game chạy đúng | [evidence/README.md](../../evidence/README.md#phase-2-ticket-02-test-contract-v11), `evidence/phase-2/` | Đạt (tự động + 7 ảnh chơi tay); còn thiếu ghi nhận cài đặt/âm thanh/đồng hồ ≤ 30 s/nhắc E |
+| Bằng chứng game chạy đúng | [evidence/README.md](../../evidence/README.md#phase-2-ticket-02-test-contract-v11), `evidence/phase-2/` | Đạt (tự động + 7 ảnh chơi tay + xác nhận âm thanh/cài đặt); chưa có ảnh đồng hồ ≤ 30 s / nhắc E |
 | Test ẩn Phase 1 vẫn đạt với số chuẩn | P2-02: AC-01…25 trong `npm test` | Đạt với cách hiểu của mình (xem rủi ro) |
 | Spec có AC cho từng mục Phần 3 | Mục E (E1–E8) | Đạt |
 | AGENTS.md/skill cập nhật, lịch sử git thể hiện | `AGENTS.md`, `CLAUDE.md`, `.claude/skills/*` (commit 9cb4956) | Đạt |
@@ -185,7 +185,8 @@ Số chuẩn khai trong `tuning`:
 ## Đánh giá cuối phase
 
 - **Đạt (có bằng chứng):** `npm test` 79/79 (gồm hồi quy Phase 1); 7/7 scenario khớp kỳ vọng ghi trước; tất định 3 Đêm; 21 600 tick ≤ 0.5 s; build + khởi động web không lỗi console; clone sạch; chơi tay 3 Đêm, thắng/thua, tạm dừng, Bình Minh; FPS TB 81–98. Chi tiết: [evidence/README.md](../../evidence/README.md).
-- **Chưa kiểm chứng:** cài đặt lưu sau khi mở lại, âm thanh, đồng hồ đỏ ≤ 30 s, nhắc "E — Nạp ánh sáng", màn giới thiệu Đêm (không có ảnh); thắng thật không dùng chế độ thử; chạy trên macOS/Linux.
+- **Đạt theo quan sát của người học (không có ảnh):** âm thanh, cài đặt lưu sau khi mở lại.
+- **Chưa kiểm chứng:** đồng hồ đỏ ≤ 30 s, nhắc "E — Nạp ánh sáng", màn giới thiệu Đêm (không có ảnh); thắng thật không dùng chế độ thử; chạy trên macOS/Linux.
 - **Rủi ro với test ẩn:**
   - Test Phase 1 bị đổi vì ticket đổi luật (AC-08/10/12 điểm khi nạp, AC-16 đẩy lùi 15 tick, AC-19/20 lịch sinh, AC-23 đẩy khỏi vùng 30 tick, AC-02 trường player v1.1). Nếu test ẩn vẫn kỳ vọng hành vi cũ sẽ trượt — đó là mâu thuẫn trong chính ticket.
   - Giả định dễ lệch người chấm: A2-1 (đạt tốc độ ngay trong 1 tick), A2-3 (lướt trên không giữ vy), A2-10 (`spawning` 60 tick), A2-16 (xuất phát Đêm 3 (0,0,−12)), A2-18 (điểm sương), A2-23 (kiểu trường snapshot), A2-30 (`end.state` khi đang dừng), A2-31 (tích phân trọng lực), A2-35 (trường scenario drifters/charms).

@@ -21,7 +21,8 @@ Sinh bằng `node scripts/evidence.mjs` tại commit ghi ở dòng đầu mỗi 
 | Menu tạm dừng: Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu; logic dừng (P2-92) | Người học nhấn Esc | [tạm dừng](phase-2/play-pause-menu.png): đồng hồ đứng 04:59, có thêm 2 nút chế độ thử; thấy mũi tên chỉ đèn ở mép trái dưới (P2-122) | Đạt |
 | ≥ 30 FPS trung bình (P2-132) | Đọc "FPS · TB" góc dưới trái khi chơi | Ảnh 3 Đêm ở trên: TB 97.7 (Đêm 1), 95.0 (Đêm 2), 81.4 (Đêm 3) | Đạt — đo ở cửa sổ **2133×1012**, lớn hơn 1280×720 (nhiều điểm ảnh hơn ~2.3 lần) |
 | Menu chính, giới thiệu Đêm (P2-80) | Chrome headless | [menu](phase-2/web-menu.png) | Đạt (menu); màn giới thiệu chưa có ảnh |
-| Cài đặt lưu sau khi mở lại, âm thanh đủ loại, đồng hồ đỏ nhấp nháy ≤ 30 s, nhắc "E — Nạp ánh sáng" (P2-100, P2-110, P2-120 phần ≤ 30 s, P2-121) | Chơi tay | — | **Chưa có ảnh/ghi nhận** |
+| Cài đặt lưu sau khi mở lại; âm thanh (P2-100, P2-110) | Người học chơi tay, tắt/mở lại trình duyệt | Xác nhận của người học: "âm thanh ok, cài đặt ok" (không có ảnh/clip) | Đạt (quan sát) |
+| Đồng hồ đỏ nhấp nháy ≤ 30 s, nhắc "E — Nạp ánh sáng" (P2-120 phần ≤ 30 s, P2-121) | Chơi tay | — | **Chưa có ảnh** |
 | Chạy trên macOS/Linux | — | — | Chưa thử trực tiếp; script và headless chỉ dùng Node chuẩn, clone sạch chạy trên Windows |
 
 ## Phase 1 (PRD-0, Test Contract v1.0)
