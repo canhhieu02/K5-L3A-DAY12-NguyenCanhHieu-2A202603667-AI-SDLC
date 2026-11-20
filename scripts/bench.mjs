@@ -59,13 +59,13 @@ function cdpConnect(url) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---------- RSS cây tiến trình trình duyệt (lấy mẫu mỗi 500 ms) ----------
-function startMemSampler(rootPid) {
+// Windows: chọn tiến trình theo thư mục profile riêng của lần bench trong command line (cây theo PID cha dễ dính PID tái sử dụng).
+function startMemSampler(rootPid, profileTag) {
   const samples = []; // [epoch_ms, bytes]
   if (process.platform === 'win32') {
-    const ps = `$root=${rootPid}
-function Tree { $all = Get-CimInstance Win32_Process -Property ProcessId,ParentProcessId; $ids=@($root); $more=$true
-  while($more){ $more=$false; foreach($p in $all){ if(($ids -contains $p.ParentProcessId) -and -not ($ids -contains $p.ProcessId)){ $ids+=$p.ProcessId; $more=$true } } }; $ids }
-$i=0; while($true){ if($i % 6 -eq 0){ $ids = Tree }
+    const ps = `$tag='${profileTag.replace(/'/g, "''")}'
+function Ids { @(Get-CimInstance Win32_Process -Property ProcessId,CommandLine | Where-Object { $_.CommandLine -and $_.CommandLine.Contains($tag) } | ForEach-Object { $_.ProcessId }) }
+$i=0; while($true){ if($i % 6 -eq 0){ $ids = Ids }
   $s=(Get-Process -Id $ids -ErrorAction SilentlyContinue | Measure-Object WorkingSet64 -Sum).Sum
   [Console]::Out.WriteLine("$([DateTimeOffset]::Now.ToUnixTimeMilliseconds()) $s"); [Console]::Out.Flush(); Start-Sleep -Milliseconds 500; $i++ }`;
     const child = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps], { stdio: ['ignore', 'pipe', 'ignore'] });
@@ -145,7 +145,7 @@ async function main() {
     } else {
       spawn(browser, [`--user-data-dir=${profile}`, `--app=${url}`], { stdio: 'ignore' }); // Node < 22: không chỉnh được vùng vẽ
     }
-    mem = startMemSampler(chrome.pid);
+    mem = process.env.DDL_BENCH_NOMEM ? { samples: [], stop() {} } : startMemSampler(chrome.pid, path.basename(profile)); // DDL_BENCH_NOMEM=1: bỏ đo RAM
     const res = await Promise.race([resultP, sleep((o.duration + BENCH_CAMERA.warmup_s + 90) * 1000).then(() => null)]);
     if (!res) throw new Error('quá thời gian chờ kết quả bench từ trình duyệt');
 

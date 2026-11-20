@@ -32,7 +32,13 @@ const dist3 = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 const EPS = 1e-9;
 export const within = (a, b, r) => distXZ(a, b) <= r + EPS;
 const sec2ticks = (s) => Math.round(s * TICKS_PER_SECOND);
-const idNum = (id) => { const m = /(\d+)$/.exec(id); return m ? Number(m[1]) : Infinity; };
+// số cuối của id ("S12" → 12), nhớ lại để sắp xếp mỗi tick không phải chạy regex (bench 200 Bóng Mực)
+const ID_NUM = new Map();
+const idNum = (id) => {
+  let n = ID_NUM.get(id);
+  if (n === undefined) { const m = /(\d+)$/.exec(id); n = m ? Number(m[1]) : Infinity; if (ID_NUM.size < 100000) ID_NUM.set(id, n); }
+  return n;
+};
 const idCmp = (a, b) => idNum(a.id) - idNum(b.id) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 // Hướng ngang từ a tới b, chuẩn hóa; trùng vị trí thì +X.
 function dirXZ(a, b) {
@@ -474,7 +480,9 @@ function shadeStepToward(g, s, tx, tz, stepLen) {
 function nearestLantern(g, pos, pred) {
   let best = null;
   let bd = Infinity;
-  for (const L of [...g.lanterns].sort(idCmp)) {
+  // danh sách đèn không đổi sau createGame: sắp theo id một lần (cùng thứ tự như sắp mỗi lần gọi)
+  if (!g.lanternsById || g.lanternsById.length !== g.lanterns.length) g.lanternsById = [...g.lanterns].sort(idCmp);
+  for (const L of g.lanternsById) {
     if (!pred(L)) continue;
     const d = distXZ(pos, L.pos);
     if (d < bd - EPS) { bd = d; best = L; }
