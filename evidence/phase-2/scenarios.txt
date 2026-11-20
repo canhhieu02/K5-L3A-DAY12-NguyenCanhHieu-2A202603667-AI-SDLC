@@ -1,4 +1,4 @@
-# 2026-11-20T10:59:54.064Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 2fd5913
+# 2026-11-20T16:32:15.695Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 0ae2431 (+ thay đổi chưa commit)
 
 ## charm — ĐẠT
 Đêm 2: nhặt Bùa Gió C1 (35,0,0) ở tick 1 → 600 tick chạy 7.2 m/s (tick 1 còn 6 m/s: x = 34.5 − 0.1 − 59×0.12 = 27.32 ở tick 60); lướt ở tick 61 và lại ở tick 73 không chờ hồi chiêu; bùa có lại ở tick 2701
