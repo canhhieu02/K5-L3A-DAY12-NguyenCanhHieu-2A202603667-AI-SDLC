@@ -37,7 +37,7 @@ Chạy hoàn toàn bằng Node, không cần cửa sổ/GPU; không cần `npm c
 | F / J | Tỏa Sáng: tốn 3 đom đóm, làm choáng + đẩy Bóng Mực trong 5 m, hồi chiêu 3 s |
 | Esc / P | Tạm dừng: Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu |
 
-Mở `http://localhost:5173/?night=2` (hoặc 3) để vào thẳng một Đêm, bỏ qua menu. **Chế độ thử** (Cài đặt → bật): menu chính có nút chọn Đêm 1/2/3, menu tạm dừng có nút "Qua Đêm" (không tính điểm) — chỉ ở bản web, không ảnh hưởng headless. Nếu phím di chuyển lúc ăn lúc không, hãy tắt bộ gõ tiếng Việt (Unikey) khi chơi. Góc dưới trái hiện FPS hiện tại và trung bình (tắt trong Cài đặt).
+Mở `http://localhost:5173/?night=2` (hoặc 3) để vào thẳng một Đêm, bỏ qua menu. **Chế độ thử** (Cài đặt → bật): menu chính có nút chọn Đêm 1/2/3, menu tạm dừng có nút "Thắng Đêm này" (thắp hết đèn, game tự xét thắng như thường) và "Qua Đêm" (không tính điểm) — chỉ ở bản web, không ảnh hưởng headless. Nếu phím di chuyển lúc ăn lúc không, hãy tắt bộ gõ tiếng Việt (Unikey) khi chơi. Góc dưới trái hiện FPS hiện tại và trung bình (tắt trong Cài đặt).
 
 ## Luật và cách tính điểm
 

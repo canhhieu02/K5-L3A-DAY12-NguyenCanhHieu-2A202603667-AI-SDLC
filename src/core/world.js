@@ -258,6 +258,14 @@ export function createGame({ seed = 1, night = 1, scenario = null, tuning = TUNI
   return g;
 }
 
+/**
+ * CHỈ dùng cho chế độ thử của web (headless không gọi): thắp mọi đèn, không cộng điểm thắp đèn.
+ * Thắng/thua vẫn do step() xét ở bước 11 của tick kế tiếp (có thưởng thời gian + Ngọn Lửa như thường).
+ */
+export function debugLightAll(g) {
+  for (const L of g.lanterns) { L.lit = true; L.deposited = g.t.lantern_cost; }
+}
+
 export function timeLeft(g) {
   return g.duration - g.simTick / TICKS_PER_SECOND;
 }

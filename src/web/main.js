@@ -1,7 +1,7 @@
 // Lớp hiển thị: chuỗi 3 Đêm, HUD, menu, âm thanh. Mọi luật game nằm trong src/core (chung với headless);
 // web chỉ gửi input vào step() với bước cố định TICK_DT và vẽ lại state.
 import * as THREE from 'three';
-import { createGame, step, timeLeft, TICK_DT } from '../core/world.js';
+import { createGame, step, timeLeft, TICK_DT, debugLightAll } from '../core/world.js';
 import { TUNING, RULES } from '../core/tuning.js';
 import { PALETTE, css } from './palette.js';
 import { WorldView } from './scene.js';
@@ -40,6 +40,7 @@ let game = null;
 let wonScores = {}; // điểm các Đêm đã thắng (A2-29)
 let resultTimer = 0;
 let settingsFrom = null;
+let testWon = false; // Đêm hiện tại thắng bằng nút chế độ thử
 
 function show(id) {
   for (const s of document.querySelectorAll('.screen')) s.classList.toggle('hidden', s.id !== id);
@@ -62,6 +63,7 @@ function skipNight() {
 
 function startNight(n, intro = true) {
   night = n;
+  testWon = false;
   game = createGame({ seed: (Date.now() & 0x7fffffff) >>> 0, night: n });
   view.build(game.map);
   // camera đặt sau lưng Mây theo hướng quay mặt đầu Đêm (+Z → camera ở phía −Z)
@@ -88,13 +90,13 @@ function finishNight() {
   const total = Object.values(wonScores).reduce((a, b) => a + b, 0);
   if (won && night === 3) {
     mode = 'dawn';
-    $('dawn-score').textContent = `Tổng điểm: ${total}`;
+    $('dawn-score').textContent = `Tổng điểm: ${total}${testWon ? ' (có Đêm thắng bằng chế độ thử)' : ''}`;
     show('scr-dawn');
     return;
   }
   $('result-title').textContent = won ? `Đêm ${night} đã sáng!` : 'Ánh sáng đã tắt…';
   $('result-text').textContent = won
-    ? `${NIGHTS[night].name}: ${game.score} điểm · Tổng: ${total}`
+    ? `${NIGHTS[night].name}: ${game.score} điểm · Tổng: ${total}${testWon ? ' (thắng bằng chế độ thử)' : ''}`
     : `${LOSE_TEXT[lastReason] || ''} Hãy thử lại ${NIGHTS[night].name}.`;
   const btns = $('result-buttons');
   btns.innerHTML = '';
@@ -120,6 +122,9 @@ document.addEventListener('click', (e) => {
     case 'resume': pauseQueued = true; break;
     case 'restart': startNight(night, false); break;
     case 'skip': skipNight(); break;
+    case 'win': // thắp hết đèn rồi tiếp tục: tick kế tiếp core xét thắng như thường
+      if (settings.devMode && game) { debugLightAll(game); testWon = true; pauseQueued = true; }
+      break;
     case 'goto': wonScores = {}; audio.startMusic(); startNight(Number(btn.dataset.night)); break;
     case 'menu': mode = 'menu'; game = null; audio.stopMusic(); show('scr-menu'); break;
     case 'settings': settingsFrom = document.querySelector('.screen:not(.hidden)')?.id; openSettings(); break;
