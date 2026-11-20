@@ -21,7 +21,11 @@ Sinh bằng `node scripts/evidence.mjs` tại commit ghi ở dòng đầu mỗi 
 | Chơi tay: đèn cạn dầu tắt (xẹp + rách, HUD "Đèn 0/5", nhắc "Thắp lại (0/5)") → thắp lại 5 đom đóm (+65, sức chứa 12) → châm dầu 2 đom đóm (+10) | Người học chơi `npm run dev`, cảnh dựng sẵn `?night=1&demo=out` (đèn L1 còn 4 dầu) | [đèn tắt](phase-3/play-lantern-out.png), [thắp lại](phase-3/play-relight.png), [châm dầu](phase-3/play-refuel.png) | Đạt (điểm trên ảnh khớp tính tay: 25 + 40 = 65; 65 + 2 × 5 = 75) |
 | Chơi tay: thắng ở bình minh, điểm bình minh | `?night=1&demo=win`: **Đêm rút còn 12 s**, 3/5 đèn sáng (dầu 60/100/35) | [thắng bình minh](phase-3/play-dawn-win.png): "Đêm 1 đã sáng!", 459 điểm | Đạt: 3 × 50 + (48 + 88 + 23) + 3 × 50 = 459; đèn còn 23 dầu (< 30) vẫn tính là sáng (A3-12). Không phải một Đêm 240 s chơi trọn |
 | FPS ≥ 30 | Đọc "FPS · TB" trên các ảnh chơi tay | 4 ảnh trên: TB 99.7–106.1 | Đạt — cửa sổ 2133×1012 (lớn hơn 1280×720) |
-| Chơi tay: thua ở bình minh, Bóng Mực hút + đèn nhấp nháy, bảng màu dễ phân biệt khi chơi + còn sau khi mở lại | `?night=1&demo=lose`, `?night=1&demo=fuel`, Cài đặt | — | **Chưa kiểm chứng** (chờ ảnh của người học; ảnh Chrome headless ở trên đã có cảnh hút + bảng màu) |
+| Chơi tay: Bóng Mực hút đèn yếu tới tắt | `?night=1&demo=fuel` (L2 còn 22 dầu, 1 con đang hút: −6/60 mỗi tick → tắt sau ~3.7 s) | [đèn bị hút tắt](phase-3/play-drained-out.png): 03:56, L2 xẹp + rách, Bóng Mực đứng cạnh, "Đèn 1/5"; L1 nhắc "Châm dầu (75/100)" | Đạt |
+| Bảng màu dễ phân biệt khi chơi + được lưu | Cài đặt → bật → người học đóng/mở lại trình duyệt → Cài đặt; rồi `?night=1&demo=fuel` | [cài đặt còn tick](phase-3/play-colorblind-saved.png), [khi chơi](phase-3/play-colorblind.png): viền + mắt Bóng Mực xanh, "⚠ Đèn 1/5" trắng | Đạt (việc mở lại trình duyệt theo lời người học; ảnh không tự chứng minh) |
+| Đồng hồ ≤ 30 s nhấp nháy, HUD thiếu đèn | `?night=1&demo=lose` trước bình minh | [trước bình minh](phase-3/play-lose-demo-before-dawn.png): đồng hồ đang ở pha tắt của nhấp nháy, "Đèn 2/5 · cần 3" màu cảnh báo | Đạt (P2-120 phần ≤ 30 s, trước đây chưa có ảnh) |
+| Màn thua ở bình minh (web) | — | Chưa có ảnh màn kết quả; luật thua `dawn` đã kiểm bằng headless: [scenario dawn-lose](phase-3/scenarios.txt), test P3-30 | **Chưa có ảnh web** |
+| Đèn yếu nhấp nháy 1 Hz khi đang chơi | — | Ảnh tĩnh chỉ bắt một pha; [ảnh Chrome headless](phase-3/web-fuel-demo.png) có thanh dầu đỏ của đèn yếu; nhịp 1 Hz kiểm bằng test P3-61 | **Chưa có ảnh/clip khi chơi** |
 
 ## Phase 2 (TICKET-02, Test Contract v1.1)
 

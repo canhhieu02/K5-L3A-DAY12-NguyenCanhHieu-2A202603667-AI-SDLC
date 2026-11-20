@@ -11,7 +11,7 @@ Quy ước như Phase 2: `T.x` = khóa `tuning`; "Kiểm chứng": `test` = test
 | 1 | Lưu ticket nguyên văn, đọc ảnh hưởng tới luật cũ | Xong | — |
 | 2 | Core: dầu đèn, châm/thắp lại, `drain`, luật thắng bình minh, sức chứa, điểm, contract v1.2 | Xong | `tests/phase3-fuel.test.js` |
 | 3 | Cập nhật test cũ bị luật mới làm sai (bảng dưới) | Xong | `npm test` |
-| 4 | Web: thanh dầu, nhấp nháy 1 Hz, đèn tắt xẹp + rách, HUD sức chứa, chế độ mù màu | Xong phần code + ảnh Chrome headless; chờ chơi tay | `tests/web-palette.test.js` P3-60…62, `evidence/phase-3/web-*.png` |
+| 4 | Web: thanh dầu, nhấp nháy 1 Hz, đèn tắt xẹp + rách, HUD sức chứa, chế độ mù màu | Xong; 8 ảnh chơi tay | `tests/web-palette.test.js` P3-60…62, `evidence/phase-3/web-*.png` |
 | 5 | ADR, changelog, giả định, spec, harness (`AGENTS.md`, `CLAUDE.md`, skill) | Xong | — |
 | 6 | Scenario mẫu + bằng chứng | Xong phần tự động | `scenarios/phase3/`, `evidence/phase-3/` |
 
@@ -94,7 +94,7 @@ Test Phase 1–2 **không** bị luật mới thay (di chuyển, nhảy, lướt
 
 | Mục DoD | Đáp ứng bởi | Trạng thái |
 |---|---|---|
-| Bằng chứng game chạy đúng | [evidence/README.md](../../evidence/README.md#phase-3-ticket-03-test-contract-v12), `evidence/phase-3/` | Đạt phần tự động; chơi tay chờ người học |
+| Bằng chứng game chạy đúng | [evidence/README.md](../../evidence/README.md#phase-3-ticket-03-test-contract-v12), `evidence/phase-3/` | Đạt (tự động + 8 ảnh chơi tay); thiếu ảnh màn thua web và clip nhấp nháy |
 | ≥ 1 ghi chú quyết định thiết kế về mô hình đèn + luật thắng | [docs/adr/0001-lantern-fuel-and-dawn-win.md](../adr/0001-lantern-fuel-and-dawn-win.md) | Đạt |
 | Test cũ bị luật mới làm sai được cập nhật/xóa có lý do, không skip | Bảng "Test cũ thay đổi" + comment trong test; `grep skip tests/` rỗng | Đạt |
 | Changelog liệt kê breaking changes | [CHANGELOG.md](../../CHANGELOG.md) (B1–B14) | Đạt |
@@ -103,7 +103,8 @@ Test Phase 1–2 **không** bị luật mới thay (di chuyển, nhảy, lướt
 ## Đánh giá cuối phase
 
 - **Đạt (có bằng chứng, commit 19fde37):** `npm test` 101/101 (gồm AC Phase 1 + P2 còn hiệu lực, 19 test P3 mới); 6/6 scenario Phase 3 khớp kỳ vọng ghi trước ngay lần chạy đầu; scenario Phase 2 còn 7/7 sau khi cập nhật `pause` (thời lượng); tất định 3 Đêm; 21 600 tick ≤ 1.1 s; build + 6 ảnh Chrome headless không lỗi console (gồm cảnh dầu đèn và bảng màu dễ phân biệt); clone sạch. Chi tiết: [evidence/README.md](../../evidence/README.md#phase-3-ticket-03-test-contract-v12).
-- **Chưa kiểm chứng:** chơi tay trọn Đêm với luật mới (đèn tắt/thắp lại, thắng/thua thật ở bình minh), nhấp nháy 1 Hz khi đang chạy, cài đặt mù màu còn sau khi mở lại trình duyệt (chỉ có test giả lập localStorage), âm thanh mới, FPS.
+- **Đạt khi chơi tay (8 ảnh, cảnh dựng sẵn `?demo=`):** đèn cạn dầu tắt → thắp lại (+65, sức chứa 12) → châm dầu (+10); Bóng Mực hút đèn yếu tới tắt; thắng bình minh 459 điểm (khớp tính tay); đồng hồ ≤ 30 s nhấp nháy; bảng màu dễ phân biệt khi chơi và còn sau khi mở lại (theo lời người học); FPS TB 99–106 ở 2133×1012.
+- **Chưa kiểm chứng:** ảnh màn thua bình minh trên web (luật đã kiểm bằng headless), clip đèn yếu nhấp nháy khi chơi (nhịp kiểm bằng test P3-61), âm thanh mới, một Đêm 240 s chơi trọn không rút thời gian (ảnh thắng dùng Đêm rút còn 12 s).
 - **Rủi ro với test ẩn:**
   - A3-1 (tên khóa `score`, bỏ `per_second_left`): nếu máy chấm so nguyên `tuning` với bảng của họ sẽ lệch ở `score`.
   - A3-2 (`wander` đi về đèn tắt gần nhất ở 2 m/s): ảnh hưởng thời điểm Bóng Mực tới đèn yếu (`drain` sớm/muộn) và vị trí Bóng Mực trong game mặc định.
