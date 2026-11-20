@@ -54,7 +54,8 @@ Mã AC khớp tên test trong [tests/contract.test.js](../../tests/contract.test
 
 ## Đánh giá cuối phase
 - **Đạt (có bằng chứng):** AC-01…AC-25 trừ AC-22 (`npm test` 24/24), scenario nhặt-nạp-thắp khớp kỳ vọng, tất định, clone sạch.
-- **Chưa kiểm chứng:** AC-22 chơi web trọn ván (cần ảnh/clip); chưa chạy trực tiếp trên macOS/Linux.
+- **AC-22 web:** đạt, ảnh thắng + thua trong `evidence/phase-1/`.
+- **Chưa kiểm chứng:** chưa chạy trực tiếp trên macOS/Linux (headless chỉ dùng Node chuẩn).
 - **Rủi ro với test ẩn:** các giả định A1-1 (tỏa sáng tốn đom đóm), A1-4 (chỉ đèn đã thắp có safe_radius), A1-6 (thưởng cuối trận chỉ khi thắng), A1-14 (thứ tự xử lý) có thể khác cách hiểu của người chấm.
 - **Lỗi AI và cách xử lý:** xem [docs/ai-log.md](../ai-log.md) (sai số số thực, code web vụng).
 - **Harness:** `CLAUDE.md` + test AC-01 tự chặn lệch giữa `game.contract.json` và tuning thật.

@@ -11,7 +11,9 @@ Môi trường: Windows 11 (Git Bash), Node v22.16.0. Headless thuần Node, kh�
 | Luồng nhặt 5 đom đóm → nạp → thắp L1 | `node src/headless/cli.js … --scenario scenarios/pickup-deposit.scenario.json --inputs scenarios/pickup-deposit.inputs.json` | [phase-1/pickup-deposit.jsonl](phase-1/pickup-deposit.jsonl) | Đạt: nhặt ở tick 10/20/30/40/50, `deposit` + `lantern_lit` tick 81, điểm 150 (đúng kỳ vọng ghi trước trong `scenarios/README.md`) |
 | Tất định trên game mặc định (random motes/shades) | Chạy 2 lần seed 2026, 18000 tick, so `cmp` | [phase-1/determinism.txt](phase-1/determinism.txt), [phase-1/default-run1.jsonl](phase-1/default-run1.jsonl) | Đạt (sha256 trùng) |
 | Clone sạch chạy được theo README | `git clone` → `npm ci` → `npm test` → headless → build | [phase-1/clean-clone.txt](phase-1/clean-clone.txt) | Đạt |
-| AC-22 chơi bản web từ đầu tới thắng/thua, HUD, chơi lại | `npm run dev`, chơi tay | _(ảnh/clip của người học)_ | Chưa kiểm tra |
+| AC-22 chơi bản web tới **thắng** | `npm run dev`, người học chơi tay | [phase-1/web-won.png](phase-1/web-won.png): HUD "Đèn đã thắp 5/5", 2 ngọn lửa, còn 02:21, banner "Đảo đã sáng lại!", điểm 1031; thấy vòng an toàn cam quanh đèn đã thắp, đảo sáng hơn | Đạt |
+| AC-22 chơi bản web tới **thua** (hết ngọn lửa) | `npm run dev`, người học chơi tay | [phase-1/web-lost.png](phase-1/web-lost.png): HUD "Ngọn lửa: ···" (0/3), Bóng Mực tím cạnh Mây, banner "Ánh sáng đã tắt…", điểm 70 (7 đom đóm × 10) | Đạt |
+| AC-22 chơi lại sau thắng/thua (R) | Quan sát khi chơi | Banner hiển thị "Nhấn R để chơi lại" (2 ảnh trên); người học đã chơi nhiều ván | Đạt (quan sát, không có ảnh riêng) |
 | Chạy trên macOS/Linux | — | — | Chưa thử trực tiếp; headless chỉ dùng Node chuẩn, web là bản tĩnh |
 
 ## CP0
