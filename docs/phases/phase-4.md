@@ -82,15 +82,23 @@ Không test nào bị skip/xóa. Test khác (AC, P2, P3, web-palette, debug-mode
 
 | Mục DoD | Đáp ứng bởi | Trạng thái |
 |---|---|---|
-| Bằng chứng chạy đúng | [evidence/README.md](../../evidence/README.md#phase-4-ticket-04-test-contract-v13), `evidence/phase-4/` | Xem "Đánh giá cuối phase" |
-| Tag `phase-4` + Release v1.0.0 | Người học tạo sau khi duyệt (không push khi chưa duyệt) | Chờ |
-| `bench.json`, `soak.json` tự chạy, commit | `evidence/phase-4/bench.json`, `evidence/phase-4/soak.json` | Xem đánh giá |
-| Test ẩn Phase 1–3 còn hiệu lực vẫn đạt | `npm test` + scenario Phase 3 | Xem đánh giá |
+| Bằng chứng chạy đúng | [evidence/README.md](../../evidence/README.md#phase-4-ticket-04-test-contract-v13), `evidence/phase-4/` | Đạt phần tự động (9/9); phần chơi tay ghi "chưa kiểm chứng" |
+| Tag `phase-4` + Release v1.0.0 | Người học tạo sau khi duyệt (không push khi chưa duyệt); gói `npm run release` | Chờ người học |
+| `bench.json`, `soak.json` tự chạy, commit | [evidence/phase-4/bench.json](../../evidence/phase-4/bench.json), [evidence/phase-4/soak.json](../../evidence/phase-4/soak.json) | Đạt |
+| Test ẩn Phase 1–3 còn hiệu lực vẫn đạt | `npm test` 115/115 + 6/6 scenario Phase 3 + sha256 tất định không đổi | Đạt với cách hiểu của mình |
 | Repo public, harness, tài liệu | AGENTS.md, CLAUDE.md, `.claude/skills/`, docs/ | Đạt (repo public do người học kiểm) |
 
 ## Đánh giá cuối phase
 
-_(điền sau khi sinh bằng chứng)_
+- **Đạt (có bằng chứng, commit 48c4976):** `npm test` 115/115 (13 test P4 mới, mọi AC/P2/P3 nguyên văn); 6/6 scenario Phase 3 + tất định 3 Đêm (sha256 giống hệt trước/sau khi tối ưu core) → đầu ra headless không đổi; bench 107.9 FPS TB / 1% low 78.7 / load 3.0 s / 847 MB; soak 0 crash, RSS ×1.079; bảng xếp hạng lưu – tắt – mở lại – xuất đúng thứ tự; clone sạch `npm ci` → `npm start` chạy; 8 ảnh web không lỗi console. Chi tiết: [evidence/README.md](../../evidence/README.md#phase-4-ticket-04-test-contract-v13).
+- **Độ dao động bench trên máy này** (Intel UHD tích hợp, 6 lần chạy 30 s): avg 99.7–107.9 FPS, 1% low 28.0–78.7. Lần 28.0 xảy ra một lần duy nhất (lần đầu sinh bằng chứng, ngay sau 8 phiên Chrome headless + server) và không lặp lại; 5 lần sau 62.6–78.7. Máy chấm có GPU khác nên số sẽ khác.
+- **Chưa kiểm chứng (cần chơi tay):** chơi bằng phím đã đổi; phụ đề + mũi tên khi Bóng Mực xuất hiện, gió sắp thổi (Đêm 3); không rung/chớp khi bật Giảm chuyển động; nhập tên sau Bình Minh/khi thua rồi tắt–mở lại game; âm thanh báo trùng phím. Release v1.0.0, video, tag `phase-4` do người học làm sau khi duyệt.
+- **Rủi ro với máy chấm / test ẩn:**
+  - Bench cần Chrome hoặc Edge cài sẵn và Node ≥ 22; trình duyệt ở chỗ lạ phải đặt `CHROME_PATH`.
+  - `peak_mem_mb` của bản web là tổng mọi tiến trình trình duyệt (~850 MB), cao hơn nhiều so với một game native; ticket cho phép null nhưng mình ghi số đo được (A4-11).
+  - Cách hiểu chiều quay camera (A4-4), seed của Đêm thứ i (A4-2), "rải đều" (A4-1) — đều có câu hỏi mở bên dưới.
+  - `run_cmd` đổi từ `npm run dev` sang `node server.mjs` để `--export-leaderboard` chạy được; bảng xếp hạng nằm ở `save/leaderboard.json` của thư mục repo.
+- **Lỗi AI và cách xử lý:** (1) `vite.config.js` import `server.mjs` có dòng shebang → esbuild của Vite báo lỗi cú pháp khi build: phát hiện nhờ chạy build ngay, bỏ shebang. (2) `tar` của Windows không mở được đường dẫn có dấu tiếng Việt → chạy trong thư mục `release/` với tên tương đối. (3) Bộ đo RAM của bench lần theo PID cha trên Windows bị dính PID tái sử dụng → `peak_mem_mb` 5 499 MB thay vì ~800: phát hiện vì số nhảy vọt giữa hai lần chạy, sửa thành lọc theo thư mục profile trong command line. (4) Một lần 1% low 28 < 30: chạy lại 5 lần để đo độ dao động thay vì "chạy tới khi đẹp" rồi ghi cả dải vào đây; đồng thời bớt cấp phát mỗi tick trong core (cache thứ tự đèn/số id), kiểm bằng sha256 tất định không đổi. (5) Kỳ vọng tự viết trong test P4-31 sai thứ tự lúc đầu (AI ghi "?" vì chưa tính) → tính tay theo múi giờ rồi mới chạy.
 
 ## Câu hỏi mở cho giảng viên
 

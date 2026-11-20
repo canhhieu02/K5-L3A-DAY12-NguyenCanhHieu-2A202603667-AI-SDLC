@@ -1,0 +1,33 @@
+# 2026-11-20T18:36:36.756Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 48c4976
+Bảng xếp hạng ghi vào file tạm (DDL_LEADERBOARD=leaderboard.json), qua API của run_cmd `node server.mjs`.
+POST {"name":"Mây","score":1210,"nights_won":3,"achieved_at":"2026-11-21T20:00:00+07:00"} → 200 hạng 1
+POST {"name":"Tie_Late","score":640,"nights_won":2,"achieved_at":"2026-11-21T14:00:00Z"} → 200 hạng 2
+POST {"name":"Tie_Early","score":640,"nights_won":2,"achieved_at":"2026-11-21T20:00:00+07:00"} → 200 hạng 2
+POST {"name":"xy","score":99,"nights_won":0,"achieved_at":"2026-11-21T10:00:00Z"} → 400 Tên cần 3–12 ký tự
+POST {"name":"Bad-Name","score":99,"nights_won":0,"achieved_at":"2026-11-21T10:00:00Z"} → 400 Tên chỉ gồm chữ cái (có thể có dấu), số và _
+POST {"name":"NoTZ","score":50,"nights_won":1,"achieved_at":"2026-11-21T10:00:00"} → 400 achieved_at phải là ISO 8601 có múi giờ
+POST {"name":"Player_0","score":100,"nights_won":1,"achieved_at":"2026-11-21T00:00:00Z"} → 200 hạng 4
+POST {"name":"Player_1","score":110,"nights_won":1,"achieved_at":"2026-11-21T01:00:00Z"} → 200 hạng 4
+POST {"name":"Player_2","score":120,"nights_won":1,"achieved_at":"2026-11-21T02:00:00Z"} → 200 hạng 4
+POST {"name":"Player_3","score":130,"nights_won":1,"achieved_at":"2026-11-21T03:00:00Z"} → 200 hạng 4
+POST {"name":"Player_4","score":140,"nights_won":1,"achieved_at":"2026-11-21T04:00:00Z"} → 200 hạng 4
+POST {"name":"Player_5","score":150,"nights_won":1,"achieved_at":"2026-11-21T05:00:00Z"} → 200 hạng 4
+POST {"name":"Player_6","score":160,"nights_won":1,"achieved_at":"2026-11-21T06:00:00Z"} → 200 hạng 4
+POST {"name":"Player_7","score":170,"nights_won":1,"achieved_at":"2026-11-21T07:00:00Z"} → 200 hạng 4
+POST {"name":"Player_8","score":180,"nights_won":1,"achieved_at":"2026-11-21T08:00:00Z"} → 200 hạng 4
+
+— tắt server, mở lại —
+GET sau khi mở lại: 10 mục
+$ node server.mjs --export-leaderboard evidence/phase-4/leaderboard-export.json
+exit=0
+  1. Mây 1210 (3 Đêm) 2026-11-21T20:00:00+07:00 seed 42
+  2. Tie_Early 640 (2 Đêm) 2026-11-21T20:00:00+07:00 seed 42
+  3. Tie_Late 640 (2 Đêm) 2026-11-21T14:00:00Z seed 42
+  4. Player_8 180 (1 Đêm) 2026-11-21T08:00:00Z seed 42
+  5. Player_7 170 (1 Đêm) 2026-11-21T07:00:00Z seed 42
+  6. Player_6 160 (1 Đêm) 2026-11-21T06:00:00Z seed 42
+  7. Player_5 150 (1 Đêm) 2026-11-21T05:00:00Z seed 42
+  8. Player_4 140 (1 Đêm) 2026-11-21T04:00:00Z seed 42
+  9. Player_3 130 (1 Đêm) 2026-11-21T03:00:00Z seed 42
+  10. Player_2 120 (1 Đêm) 2026-11-21T02:00:00Z seed 42
+Top 10, điểm giảm dần, bằng điểm thì đạt trước đứng trên, giống hệt dữ liệu sau khi mở lại → ĐẠT

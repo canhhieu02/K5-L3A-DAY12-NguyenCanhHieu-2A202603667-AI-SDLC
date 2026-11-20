@@ -1,0 +1,12 @@
+{
+  "contract_version": "1.3",
+  "avg_fps": 107.9,
+  "p1_low_fps": 78.7,
+  "frame_ms_p95": 11.12,
+  "frames": 3237,
+  "load_ms": 3007,
+  "peak_mem_mb": 847,
+  "vsync_off": true,
+  "renderer": "three.js r170 WebGL2 · Chrome 157.0.0.0 · GPU: ANGLE (Intel, Intel(R) UHD Graphics (0x00009BC4) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "os": "Windows_NT 10.0.26200 x64 · CPU Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz ×8 · RAM 16 GB"
+}

@@ -1,0 +1,6 @@
+# 2026-11-20T18:36:36.673Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 48c4976
+$ node --expose-gc src/headless/soak.js --seed 7 --nights 10 --out evidence/phase-4/soak.json
+exit=0
+{"nights":10,"crashes":0,"results":["lost","lost","lost","lost","lost","lost","lost","lost","lost","lost"],"mem_start_mb":53,"mem_end_mb":57.2,"duration_s":0.6}
+crashes=0, mem_end/mem_start = 1.079 (ngưỡng ≤ 1.2) → ĐẠT
+Kết quả: 0 thắng / 10 thua — input ngẫu nhiên thường rơi khỏi đảo hoặc bị Bóng Mực chạm nên thua là bình thường.

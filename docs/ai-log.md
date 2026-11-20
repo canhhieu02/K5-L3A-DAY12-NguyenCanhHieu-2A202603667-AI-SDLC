@@ -37,6 +37,12 @@
 | Phase 3 | 3 | Test mới P3-xx (kỳ vọng tính tay) | Lỗi AI trong test: `invuln_ticks: 59` (hết ở tick 59, không phải 60); kịch bản thắp lại bị đèn sáng gần hơn "cướp" lượt E | Test đỏ → đọc luật/giả định (A2-4, A3-5) → sửa test, không sửa core; ghi bẫy vào skill `add-rule` | |
 | Phase 3 | 3 | Web: thanh dầu, nhấp nháy, đèn tắt xẹp + rách, chế độ mù màu | Vết rách lần đầu quá mờ trên nền đêm | AI tự chụp Chrome headless (`?demo=fuel`), xem ảnh → phóng to + màu đen | |
 | Phase 3 | 3 | Scenario Phase 3 (kỳ vọng ghi trước) + bằng chứng | 6/6 khớp lần đầu; scenario Phase 2 `pause` lệch do Đêm 1 còn 240 s | Chạy lại scenario Phase 2 vào thư mục tạm (`EVIDENCE_OUT`) để không ghi đè bằng chứng cũ; cập nhật kỳ vọng có ghi lý do | |
+| Phase 4 | 4 | `/clear` rồi dán nguyên văn TICKET-04; AI lưu `ticket-04.md`, đọc AGENTS/phase-3/world/scene/main, chọn cách đo bench cho bản web (Chrome thật + CDP, không thêm thư viện) | Đúng; quyết định ghi ADR 0002 | — | |
+| Phase 4 | 4 | Làm rủi ro lớn nhất trước: cảnh bench trong core + launcher, chạy thử 10 s ngay | 115 FPS TB trên Intel UHD → không cần tối ưu render (instancing) | Đo thật trước khi tối ưu | |
+| Phase 4 | 4 | Server + plugin Vite cho API bảng xếp hạng | Lỗi AI: `server.mjs` có shebang, Vite (esbuild) build config báo lỗi cú pháp | Chạy `npm run build` ngay → bỏ shebang | |
+| Phase 4 | 4 | Đổi phím, phụ đề, giảm chuyển động, chữ lớn, bảng xếp hạng web + 13 test P4 | 115/115 lần đầu; ảnh Chrome headless: màn Cài đặt tràn 720 px | AI tự xem 3 ảnh → thu gọn bảng phím | |
+| Phase 4 | 4 | Gói release | Lỗi AI: `tar` Windows không mở đường dẫn có dấu tiếng Việt | Chạy thật thấy lỗi → `cwd` = `release/`, tên tương đối | |
+| Phase 4 | 4 | Bằng chứng đầy đủ | Bench lần đầu 1% low 28 < 30; lần chạy lại `peak_mem_mb` 5 499 MB (bộ đo RAM lần theo PID cha dính PID tái sử dụng) | So sánh có/không đo RAM → không phải nguyên nhân giật; sửa bộ đo (lọc theo profile), bớt cấp phát mỗi tick trong core, kiểm sha256 tất định không đổi; ghi cả dải 6 lần đo vào phase-4.md thay vì chỉ lần đẹp | |
 
 ## Token / chi phí
 
@@ -69,6 +75,12 @@ Bảng *"What's contributing to your limits usage"* (24 giờ qua, ước tính)
 - Tiết kiệm được nhờ harness: skill `add-rule` có sẵn bẫy Phase 2 (Bùa Gió giữa cầu, dung sai, bộ đếm); `scripts/evidence.mjs` sinh toàn bộ bằng chứng bằng 1 lệnh; cảnh dựng sẵn `?demo=` giúp chụp ảnh chơi tay trong vài phút thay vì chơi trọn Đêm 4 phút.
 
 **Bài học cho Phase 4:** `/compact` ngay sau mỗi commit lớn; với change request, đọc `CHANGELOG.md` + ADR trước thay vì đọc lại toàn bộ test; người học gửi ảnh theo lô sau khi đã tự lọc ảnh đúng cảnh (đợt 2 có 2/4 ảnh chưa đúng cảnh phải giải thích lại).
+
+| Sau khi tag `phase-4` | Phase 4: 1 cuộc hội thoại (bắt đầu bằng `/clear`), dán TICKET-04 một lần; AI làm liền core → bench → soak → bảng xếp hạng → tiếp cận → tài liệu → bằng chứng | _(người học điền)_ | _(người học điền)_ | Chi phí tiền thêm: 0 (nằm trong gói) |
+
+**Phase 4 — đã áp dụng / chưa áp dụng bài học:**
+- Đã: `/clear` trước khi dán ticket; đọc AGENTS.md + phase-3.md + CHANGELOG thay vì đọc lại toàn bộ test; sửa file lớn bằng Edit nhỏ; lọc output `npm test` chỉ còn `not ok`/tổng kết; chỉ xem 6 ảnh (3 lần kiểm bố cục + 2 ảnh bằng chứng cuối + 1 ảnh bench). Rủi ro lớn nhất (bench bản web) làm và đo trước nên không tốn công tối ưu render không cần thiết.
+- Chưa: vẫn một hội thoại dài, không `/compact` giữa 2 commit.
 
 ## Cách tiết kiệm token đã áp dụng
 - CLAUDE.md ngắn (nay import AGENTS.md); chỉ đưa ticket của phase hiện tại vào ngữ cảnh.

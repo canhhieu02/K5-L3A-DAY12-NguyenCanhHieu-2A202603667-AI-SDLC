@@ -3,6 +3,23 @@
 Bằng chứng chỉ sinh từ lệnh chạy thật, không sửa tay. Mỗi phase một thư mục `evidence/phase-N/`. File này (bảng tóm tắt) là phần duy nhất viết tay.
 Môi trường: Windows 11 (Git Bash), Node v22.16.0. Headless thuần Node, không phụ thuộc OS.
 
+## Phase 4 (TICKET-04, Test Contract v1.3)
+
+Sinh bằng `node scripts/evidence.mjs` (mặc định `PHASE=4`) tại commit ghi ở dòng đầu mỗi file. Spec + AC: [docs/phases/phase-4.md](../docs/phases/phase-4.md). Máy đo: Windows 11, Intel i5-10300H ×8, RAM 16 GB, GPU **Intel UHD tích hợp** (ANGLE/D3D11), Chrome 157, Node 22.16.0, cắm sạc. Số tự đo chỉ để tham khảo; máy chấm là máy của giảng viên.
+
+| Yêu cầu | Cách kiểm chứng | Bằng chứng | Kết quả |
+|---|---|---|---|
+| Contract v1.3, test cũ còn hiệu lực (P4-01, P4-02) | `npm test` 115 test (AC, P2, P3 chạy nguyên văn; AC-01 cập nhật phiên bản) | [phase-4/test.txt](phase-4/test.txt) | Đạt 115/115 |
+| Đầu ra headless không đổi | 6 scenario Phase 3 (kỳ vọng ghi trước) + tất định 3 Đêm (sha256 giống trước/sau tối ưu core) + hiệu năng 21 600 tick | [scenarios.txt](phase-4/scenarios.txt), [determinism.txt](phase-4/determinism.txt), [perf.txt](phase-4/perf.txt) | Đạt 6/6; 3/3 tất định; ≤ 0.9 s/Đêm |
+| Bench (mục 1, P4-10…15) | Đúng `bench_cmd --seed 42 --duration 30`: cửa sổ Chrome, vùng vẽ 1280×720, dpr 1, vsync tắt, 200 Bóng Mực + 100 đom đóm + L1–L3 fuel 100 | [phase-4/bench.json](phase-4/bench.json), [bench.txt](phase-4/bench.txt), ảnh [cảnh bench](phase-4/web-bench-scene.png) | Đạt trên máy này: avg 107.9 FPS, 1% low 78.7, p95 11.1 ms, load 3.0 s, RAM 847 MB (tổng tiến trình trình duyệt) |
+| Soak (mục 2, P4-20, P4-21) | Đúng `soak_cmd --seed 7 --nights 10` | [phase-4/soak.json](phase-4/soak.json), [soak.txt](phase-4/soak.txt) | Đạt: 0 crash, RSS 53.0 → 57.2 MB (×1.079 ≤ 1.2). 10/10 thua (input ngẫu nhiên rơi khỏi đảo/bị chạm) |
+| Bảng xếp hạng (mục 3, P4-30…33) | `run_cmd` thật: POST 15 mục (3 sai bị từ chối) → tắt → mở lại → `--export-leaderboard` | [leaderboard.txt](phase-4/leaderboard.txt), [leaderboard-export.json](phase-4/leaderboard-export.json), ảnh [màn Bảng xếp hạng](phase-4/web-leaderboard.png) | Đạt: top 10, giảm dần, bằng điểm ai đạt trước đứng trên, còn sau khi mở lại, tên "Mây" |
+| Đổi phím, cỡ chữ (P4-40, P4-41) | Test thuần + ảnh Cài đặt | [Cài đặt/phím](phase-4/web-settings-keys.png), [chữ lớn](phase-4/web-settings-large.png) | Đạt (test + ảnh); chơi bằng phím đã đổi: chưa kiểm chứng tay |
+| Phụ đề/chỉ báo, giảm chuyển động (P4-42, P4-43) | Ảnh `?demo=a11y` (10 s cuối + đèn < 30), kiểm tĩnh mã | [phụ đề](phase-4/web-a11y-captions.png), [mù màu + chữ lớn](phase-4/web-a11y-captions-colorblind-large.png) | Đạt phần chụp được; Bóng Mực xuất hiện + mũi tên, gió sắp thổi, không rung/chớp khi bật Giảm chuyển động: chưa kiểm chứng tay |
+| Clone sạch ≤ 3 lệnh (P4-50) | clone HEAD → `npm ci` (tự build) → `npm test` → headless → `npm start` trả trang game → soak → export | [clean-clone.txt](phase-4/clean-clone.txt) | Đạt |
+| Build + ảnh web không lỗi console | 8 ảnh Chrome headless | [web.txt](phase-4/web.txt) | Đạt 8/8 |
+| Release v1.0.0, video, tag `phase-4` | `npm run release` → zip; người học tạo Release + quay video | — | Chưa (chờ người học duyệt) |
+
 ## Phase 3 (TICKET-03, Test Contract v1.2)
 
 Sinh bằng `node scripts/evidence.mjs` tại commit ghi ở dòng đầu mỗi file. Kỳ vọng scenario ghi trước trong `scenarios/phase3/*.expect.json`. Spec + bảng test cũ thay đổi: [docs/phases/phase-3.md](../docs/phases/phase-3.md).

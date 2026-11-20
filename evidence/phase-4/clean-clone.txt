@@ -1,0 +1,30 @@
+# 2026-11-20T18:37:15.074Z | clone sạch tại commit 48c4976
+$ git clone <repo> ddl-clone-DSl4Z1/repo
+exit=0
+$ npm ci
+exit=0
+added 12 packages in 6s
+$ npm test
+exit=0
+# tests 115
+# pass 115
+# fail 0
+$ node src/headless/cli.js --seed 7 --night 1 --ticks 600 --out o1.jsonl
+exit=0
+{"type":"end","ticks":600,"state":"playing","score":0}
+$ node src/headless/cli.js --seed 7 --night 2 --ticks 600 --out o2.jsonl
+exit=0
+{"type":"end","ticks":600,"state":"playing","score":0}
+$ node src/headless/cli.js --seed 7 --night 3 --ticks 600 --out o3.jsonl
+exit=0
+{"type":"end","ticks":600,"state":"playing","score":0}
+dist/index.html sau npm ci (prepare = vite build): có
+$ npm start (node server.mjs --no-open --port 5196) → GET / trả về trang game đã build
+$ node --expose-gc src/headless/soak.js --seed 7 --nights 10 --out soak.json
+exit=0
+{"nights":10,"crashes":0,"results":["lost","lost","lost","lost","lost","lost","lost","lost","lost","lost"],"mem_start_mb":53.2,"mem_end_mb":57.7,"duration_s":0.5}
+$ node server.mjs --export-leaderboard out.json
+exit=0
+{
+  "entries": []
+}

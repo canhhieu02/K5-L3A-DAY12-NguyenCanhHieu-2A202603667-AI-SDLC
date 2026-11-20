@@ -1,0 +1,85 @@
+# 2026-11-20T18:35:46.753Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 48c4976
+
+## capacity — ĐẠT
+Sức chứa = min(20, 10 + 2 × successful_lights): 5 lần thắp → 20; đứng trên 22 đom đóm chỉ nhặt 20
+$ node src/headless/cli.js --seed 1 --night 1 --ticks 2 --snapshot-every 1 --scenario scenarios/phase3/capacity.scenario.json --inputs scenarios/phase3/capacity.inputs.json --out evidence/phase-4/capacity.jsonl --snapshot-every 1
+exit=0
+  [x] tick 0 player.capacity = 20 (thực tế 20)
+  [x] tick 1 player.carried = 20 (thực tế 20)
+  [x] tick 1 motes_active = 2 (thực tế 2)
+  [x] tick 0 time_left_s = 240 (thực tế 240)
+
+## dawn-lose — ĐẠT
+Đêm 3 (7 đèn, cần 5): chỉ 4 đèn sáng lúc bình minh → thua dawn, không có thưởng; thời lượng Đêm 3 = 300 s
+$ node src/headless/cli.js --seed 1 --night 3 --ticks 100 --snapshot-every 1 --scenario scenarios/phase3/dawn-lose.scenario.json --inputs scenarios/phase3/dawn-lose.inputs.json --out evidence/phase-4/dawn-lose.jsonl --snapshot-every 1
+exit=0
+  [x] event game_over @60 {"result":"lost","reason":"dawn"}
+  [x] tick 0 time_left_s = 1 (thực tế 1)
+  [x] tick 60 state = "lost" (thực tế "lost")
+  [x] tick 60 score = 0 (thực tế 0)
+
+## dawn-win — ĐẠT
+Đêm 2 (6 đèn, cần ceil(0.6 × 6) = 4): 4 đèn sáng lúc bình minh (tick 60) → thắng dawn_survived; điểm = 4 × 50 + floor(fuel) (99, 99, 99, 39) + 3 × 50
+$ node src/headless/cli.js --seed 1 --night 2 --ticks 100 --snapshot-every 1 --scenario scenarios/phase3/dawn-win.scenario.json --inputs scenarios/phase3/dawn-win.inputs.json --out evidence/phase-4/dawn-win.jsonl --snapshot-every 1
+exit=0
+  [x] event game_over @60 {"result":"won","reason":"dawn_survived"}
+  [x] tick 59 state = "playing" (thực tế "playing")
+  [x] tick 60 state = "won" (thực tế "won")
+  [x] tick 60 score = 686 (thực tế 686)
+  [x] tick 60 lanterns.4.fuel = 39.5 (thực tế 39.5)
+
+## drain-pulse-refuel — ĐẠT
+Bóng Mực đang drain trúng Tỏa Sáng: stunned, tổng +15. Châm 2 đom đóm ở tick 3: 1192 + 1200 đơn vị = 39.9 ≥ 30 → đèn có lại vùng an toàn, Bóng Mực bị đẩy ra mép 6 m, không ai bị đánh
+$ node src/headless/cli.js --seed 1 --night 1 --ticks 60 --snapshot-every 1 --scenario scenarios/phase3/drain-pulse-refuel.scenario.json --inputs scenarios/phase3/drain-pulse-refuel.inputs.json --out evidence/phase-4/drain-pulse-refuel.jsonl --snapshot-every 1
+exit=0
+  [x] event pulse @1 {"stunned_ids":["S1"]}
+  [x] event refuel @3 {"lantern_id":"L1","amount":2,"fuel":39.9}
+  [x] không có event player_hit
+  [x] không có event fuel_drain
+  [x] không có event lantern_out
+  [x] tick 1 score = 15 (thực tế 15)
+  [x] tick 1 shades.0.state = "stunned" (thực tế "stunned")
+  [x] tick 1 player.carried = 2 (thực tế 2)
+  [x] tick 3 score = 25 (thực tế 25)
+  [x] tick 3 player.carried = 0 (thực tế 0)
+  [x] tick 60 lanterns.0.fuel = 38.9 (thực tế 38.9)
+
+## drain — ĐẠT
+Đèn yếu (fuel 20 < 30, mất vùng an toàn): Bóng Mực wander đi 2 m/s tới, cách ≤ 2 m ở tick 90 thì drain, hút 5/s + hao 1/s; fuel_drain mỗi 60 tick; đèn tắt ở tick 275, Bóng Mực về wander
+$ node src/headless/cli.js --seed 1 --night 1 --ticks 300 --snapshot-every 1 --scenario scenarios/phase3/drain.scenario.json --inputs scenarios/phase3/drain.inputs.json --out evidence/phase-4/drain.jsonl --snapshot-every 1
+exit=0
+  [x] event fuel_drain @150 {"lantern_id":"L1","shade_id":"S1","fuel":12.5}
+  [x] event fuel_drain @210 {"lantern_id":"L1","shade_id":"S1","fuel":6.5}
+  [x] event fuel_drain @270 {"lantern_id":"L1","shade_id":"S1","fuel":0.5}
+  [x] event lantern_out @275 {"lantern_id":"L1"}
+  [x] không có event player_hit
+  [x] không có event game_over
+  [x] tick 89 shades.0.state = "wander" (thực tế "wander")
+  [x] tick 90 shades.0.state = "drain" (thực tế "drain")
+  [x] tick 90 lanterns.0.fuel = 18.5 (thực tế 18.5)
+  [x] tick 274 shades.0.state = "drain" (thực tế "drain")
+  [x] tick 275 shades.0.state = "wander" (thực tế "wander")
+  [x] tick 275 lanterns.0.ever_lit = true (thực tế true)
+  [x] tick 275 lanterns.0.fuel = 0 (thực tế 0)
+
+## refuel-relight — ĐẠT
+Đèn L1 còn 1 dầu → tắt ở tick 60 (lantern_out, nhớ ever_lit) → thắp lại bằng 5 đom đóm ở tick 61 (relight, +40, sức chứa 12) → châm dầu 1 đom đóm ở tick 121 (99 → 100)
+$ node src/headless/cli.js --seed 1 --night 1 --ticks 130 --snapshot-every 1 --scenario scenarios/phase3/refuel-relight.scenario.json --inputs scenarios/phase3/refuel-relight.inputs.json --out evidence/phase-4/refuel-relight.jsonl --snapshot-every 1
+exit=0
+  [x] event lantern_out @60 {"lantern_id":"L1"}
+  [x] event deposit @61 {"lantern_id":"L1","amount":5,"deposited":5}
+  [x] event lantern_lit @61 {"lantern_id":"L1","relight":true}
+  [x] event refuel @121 {"lantern_id":"L1","amount":1,"fuel":100}
+  [x] không có event game_over
+  [x] tick 59 lanterns.0.fuel = 0 (thực tế 0)
+  [x] tick 59 lanterns.0.lit = true (thực tế true)
+  [x] tick 60 lanterns.0.lit = false (thực tế false)
+  [x] tick 60 lanterns.0.ever_lit = true (thực tế true)
+  [x] tick 60 lanterns.0.deposited = 0 (thực tế 0)
+  [x] tick 61 lanterns.0.fuel = 100 (thực tế 100)
+  [x] tick 61 lanterns.0.relit_count = 1 (thực tế 1)
+  [x] tick 61 player.capacity = 12 (thực tế 12)
+  [x] tick 61 score = 65 (thực tế 65)
+  [x] tick 120 lanterns.0.fuel = 99 (thực tế 99)
+  [x] tick 121 player.carried = 3 (thực tế 3)
+  [x] tick 121 score = 70 (thực tế 70)

@@ -1,0 +1,122 @@
+# 2026-11-20T18:35:46.661Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 48c4976
+$ npm test
+exit=0
+ok 1 - AC-01 game.contract.json khớp tuning game đang dùng
+ok 2 - P3-01 tuning = số chuẩn TICKET-02 + TICKET-03 (contract v1.2)
+ok 3 - AC-02 output: snapshot tick 0 + mỗi N tick, dòng cuối là end
+ok 4 - AC-03 mặc định --snapshot-every = 10 và time_left_s = duration - steps/60
+ok 5 - AC-04 di chuyển: move [0,1] trong 60 tick = player_speed mét theo +Z
+ok 6 - AC-05 cam_yaw_deg 90: move [0,1] đi theo +X
+ok 7 - AC-06 move dài hơn 1 được chuẩn hóa
+ok 8 - AC-07 frame chỉ đổi trường có mặt; move giữ nguyên khi frame sau không có move
+ok 9 - AC-08 nhặt đom đóm khi khoảng cách XZ <= pickup_radius, đúng tick
+ok 10 - AC-09 không nhặt quá carry_capacity
+ok 11 - AC-10 nạp đủ lantern_cost thì thắp đèn, cộng per_lantern
+ok 12 - AC-11 nạp một phần; ngoài interact_radius thì không nạp; giữ nút không nạp lặp
+ok 13 - AC-12 / P3-30 thắp đèn cuối KHÔNG kết thúc Đêm; bình minh đủ đèn thì thắng dawn_survived; đèn đặt sẵn lit không cộng điểm thắp
+ok 14 - AC-13 Bóng Mực đuổi theo và chạm thì mất 1 flame, rơi floor(carried*ratio); bất tử invuln_s
+ok 15 - AC-14 hết flames thì thua (no_flames)
+ok 16 - AC-15 hết giờ thì thua (dawn)
+ok 17 - AC-16 tỏa sáng: tốn pulse_cost, choáng + đẩy Bóng Mực trong pulse_radius, cộng per_stun
+ok 18 - AC-17 tỏa sáng cần đủ ánh sáng và có hồi chiêu
+ok 19 - AC-18 Bóng Mực không vào safe_radius của đèn đã thắp
+ok 20 - AC-23 đèn vừa thắp: Bóng Mực (kể cả đang choáng) trong safe_radius bị đẩy ra trong 30 tick (v1.1, P2-19)
+ok 21 - AC-24 nạp: deposited không vượt lantern_cost, phần dư giữ lại; đầy thì không nhặt thêm
+ok 22 - AC-25 cùng tick: event đứng trước snapshot; end là dòng cuối; thưởng bình minh nằm trong snapshot + end
+ok 23 - AC-19 tất định: cùng seed/scenario/inputs -> output giống hệt; khác seed -> khác
+ok 24 - AC-20 game mặc định sinh thêm Bóng Mực theo lịch v1.1 (P2-30)
+ok 25 - AC-21 lỗi định dạng inputs/scenario -> mã thoát 2; thiếu tham số -> khác 0
+ok 26 - debugWinNight: tick kế tiếp là bình minh, thắng dawn_survived, chỉ có thưởng bình minh (không điểm thắp đèn)
+ok 27 - debugWinNight khi đang tạm dừng: thắng ở tick tiếp tục, không phải lúc đang dừng
+ok 28 - headless không gọi hàm chế độ thử
+ok 29 - P2-11 nhảy: v0 7, g 20, đỉnh ~1.225 m, tiếp đất ~42 tick; nhấn lại trên không vô tác dụng
+ok 30 - P2-12 lướt: event dash, 12 tick x 14 m/s theo hướng đang chạy, sau đó chạy thường
+ok 31 - P2-12 lướt trên không giữ nguyên độ cao
+ok 32 - P2-13 lướt khi đứng yên theo hướng đang quay mặt (đầu Đêm +Z; sau khi đi -X thì -X)
+ok 33 - P2-14 / P2-43 hồi chiêu lướt 90 tick tính từ lúc bắt đầu; giữ nút không lướt lại
+ok 34 - P2-15 nhặt cần chênh cao chân Mây – mặt đất đặt đom đóm <= 1.5 m
+ok 35 - P2-16 mặc định 20 đom đóm trên 20 điểm sinh khác nhau; tick 240 sinh thêm 1
+ok 36 - P2-17 / P3-12 tương tác: hai đèn cách đều chọn id nhỏ hơn; đèn sáng chưa đầy dầu được châm
+ok 37 - P2-19 đèn vừa thắp: Bóng Mực trong vùng bị đẩy ra trong 30 tick, không gây hit lúc đó
+ok 38 - P2-20 Tỏa Sáng: khoảng cách 3D tới tâm (chân + 0.8 m) <= 5 m; choáng 120 tick; không chết
+ok 39 - P2-21 Tỏa Sáng trúng Bóng Mực đang choáng: làm mới 120 tick, vẫn +per_stun
+ok 40 - P2-23 phát hiện 12 m / bỏ đuổi 18 m; tốc độ 4 m/s
+ok 41 - P2-24 bị chạm: −1 lửa, rơi floor(carried/2) thành đom đóm dropped (TTL 480), bất tử 90, Bóng Mực recoil 2 m / 60 tick
+ok 42 - P2-25 hai Bóng Mực chạm cùng tick: chỉ 1 hit, con id nhỏ nhất
+ok 43 - P2-26 rơi khỏi đảo: 1 player_hit fall (lost), mất hết đom đóm, chờ 60 tick rồi hồi sinh ở điểm xuất phát, bất tử 90
+ok 44 - P2-27 rơi khi còn 1 Ngọn Lửa: thua no_flames ngay tick đó
+ok 45 - P2-28 / P3-33 hết Ngọn Lửa luôn thua trước (kể cả tick bình minh, đủ đèn); thắp đèn thứ 3 đúng tick bình minh vẫn thắng
+ok 46 - P2-31 thứ tự trong tick: nhặt (bước 4) trước nạp (bước 5)
+ok 47 - P2-40 snapshot v1.1 có đủ trường
+ok 48 - P2-41 scenario v1.1: invuln_ticks, pulse_cd_ticks, dash_cd_ticks, charm_ticks, shades[].state; sai kiểu → mã 2
+ok 49 - P2-42 / P3-41 trạng thái Bóng Mực chỉ thuộc spawning/wander/chase/recoil/stunned/drain
+ok 50 - P2-84 night_start {night} ở tick 1
+ok 51 - P2-90 / P2-91 tạm dừng: tick tăng, sim_tick và thời gian đứng yên, state paused; tiếp tục chạy đúng
+ok 52 - P2-03 --night ngoài 1..3 → mã khác 0
+ok 53 - P2-04 chạy một Đêm 21 600 tick trong <= 30 s
+ok 54 - P2-60 Gió Lạc: Đêm 2/3 sinh D1 ở tick 1200, D2 ở 2400, tối đa 2; Đêm 1 không có
+ok 55 - P2-61 idle → chase khi Mây mang >= 5 và cách <= 15 m (7 m/s); thiếu điều kiện thì idle
+ok 56 - P2-62 Gió Lạc chạm (XZ <= 1.2 m): cướp min(3, carried) kể cả khi Mây bất tử, flee 240 tick rồi removed, mỗi con cướp 1 lần
+ok 57 - P2-63 Tỏa Sáng trúng Gió Lạc đang chase: chuyển flee, không cướp, không cộng điểm
+ok 58 - P2-64 Tỏa Sáng trúng Gió Lạc flee đang mang: drifter_drop, đom đóm rơi tại chỗ, biến mất sau 120 tick
+ok 59 - P2-65 vùng an toàn của đèn không chặn Gió Lạc
+ok 60 - P2-70 Bùa Gió mặc định: Đêm 2 C1 (35,0,0); Đêm 3 C1 (30,0,25), C2 (−30,0,25); Đêm 1 không có
+ok 61 - P2-71 nhặt bùa: charm_picked {charm_id, charm_ticks: 600}; charm_s 10, respawn_s 45
+ok 62 - P2-72 trong hiệu lực: chạy 7.2 m/s; lướt không hồi chiêu nhưng phải nhấn lại; nhấn khi đang lướt bị bỏ qua; lướt vẫn 14 m/s x 12 tick
+ok 63 - P2-73 nhặt bùa khác khi đang hiệu lực: làm mới 600 tick
+ok 64 - P2-74 bùa xuất hiện lại sau 2700 tick
+ok 65 - P2-41 scenario drifters/charms thay thế mặc định; sai định dạng → mã 2
+ok 66 - P2-50 Đêm 1: đèn chuẩn, Mây ở (0,0,0), không gió/bục
+ok 67 - P2-03 --night 2 / 3: đúng thời lượng, night_start
+ok 68 - P2-52 Đêm 2: 6 đèn chuẩn, 2 đảo + cầu; bước khỏi cầu thì rơi
+ok 69 - P2-53 Đêm 2 bục nhảy: phóng vy 14 + 24 m/s về tâm đảo kia, phím không ghi đè, đáp trong đảo đích sau ~1.4 s
+ok 70 - P2-53 vẫn lướt được khi đang bay từ bục
+ok 71 - P2-54 Đêm 3: 7 đèn chuẩn, xuất phát (0,0,-12)
+ok 72 - P2-54 Đêm 3: vách tầng 1 chặn đi lên; dốc 30° đưa lên tầng 1; bước khỏi mép trong rơi xuống tầng 0
+ok 73 - P2-54 Đêm 3: tháp chuông chặn; bước khỏi tầng 2 rơi xuống
+ok 74 - P2-55 Đêm 3 bục (0,3,13): vy 12 + 8 m/s hướng −Z, đáp lên tầng 2
+ok 75 - P2-56 Đêm 3 gió: mỗi 30 s một cơn 5 s, đẩy Mây 2 m/s; wind_enabled:false thì không có
+ok 76 - P2-23 / P2-30 Đêm 3: Bóng Mực 4.5 m/s; lịch sinh Đêm 2 mỗi 420 tick, Đêm 3 mỗi 360 tick
+ok 77 - P3-10 thắp lần đầu: fuel 100, ever_lit, hao 1/giây; đèn tắt fuel 0; snapshot đèn đủ trường v1.2
+ok 78 - P3-10 dầu tính theo đơn vị nguyên: 3600 tick từ 100 còn đúng 40
+ok 79 - P3-11 hết dầu: lantern_out, tắt, deposited 0, fuel 0, nhớ ever_lit; fuel 0 đặt sẵn thì tắt ngay tick 1
+ok 80 - P3-12 châm dầu: used = min(mang, ceil((100 − fuel)/10)), fuel + 10×used (tối đa 100), +5 mỗi đom đóm, event refuel
+ok 81 - P3-12 hệ quả thứ tự tick (A3-5): đèn vừa châm đầy, lần bấm sau đã hao 1/60 nên vẫn được chọn trước đèn tắt ở xa hơn
+ok 82 - P3-13 thắp lại: đèn ever_lit cần 5 (relight true, +40, relit_count +1); đèn chưa từng sáng vẫn cần 10
+ok 83 - P3-13 tắt rồi thắp lại trong cùng Đêm: lantern_out tick 60, thắp lại bằng 5 đom đóm ở tick 61
+ok 84 - P3-14 sức chứa = 10 + 2 × successful_lights, tối đa 20; thắp/thắp lại tăng sức chứa; nhặt không vượt
+ok 85 - P3-20 vùng an toàn: fuel đúng 30 vẫn chặn/đẩy Bóng Mực; < 30 thì mất vùng, Bóng Mực wander đi tới và hút
+ok 86 - P3-21 drain: hút 5/s cộng dồn với hao 1/s; fuel_drain mỗi 60 tick; nhiều con cộng dồn; đèn tắt → wander
+ok 87 - P3-22 drain → chase khi Mây vào trong 6 m (không phải 12 m); drain không gây hit
+ok 88 - P3-23 Tỏa Sáng trúng Bóng Mực đang drain: stunned, tổng +15; hết choáng về wander
+ok 89 - P3-24 châm lên ≥ 30 khi có Bóng Mực đang hút: về wander, bị đẩy ra mép 6 m trong 30 tick, không gây hit; châm < 30 thì không đẩy
+ok 90 - P3-25 wander chọn đèn yếu gần nhất (bằng nhau → id nhỏ); không có đèn yếu thì về đèn tắt gần nhất
+ok 91 - P3-26 Bóng Mực đang chase không đổi mục tiêu sang đèn yếu
+ok 92 - P3-30 bình minh: đủ ceil(0.6 × tổng) đèn sáng → won dawn_survived; thiếu → lost dawn (Đêm 1/2/3: 3/5, 4/6, 5/7)
+ok 93 - P3-31 không thắng sớm: thắp đủ 5/5 đèn, Đêm chạy tiếp tới bình minh (240 s)
+ok 94 - P3-32 điểm bình minh: mỗi đèn sáng +50 + floor(fuel), mỗi Ngọn Lửa +50; không thưởng thời gian
+ok 95 - P3-42 scenario v1.2: lit không fuel → 100; đèn tắt có fuel → 0; sai kiểu → mã 2
+ok 96 - P4-01 contract v1.3: bench_cmd, soak_cmd khai báo và trỏ tới file có thật; run_cmd có --export-leaderboard
+ok 97 - P4-10 cảnh bench: Đêm 1, đúng 200 Bóng Mực wander + 100 đom đóm rải trên đảo, L1–L3 sáng fuel 100, Mây ở (0,0,0)
+ok 98 - P4-11 cảnh bench tắt sinh thêm, sát thương, nhặt, hao dầu, kết thúc Đêm; Bóng Mực vẫn di chuyển
+ok 99 - P4-12 game thường không bị cờ bench ảnh hưởng (headless giữ nguyên)
+ok 100 - P4-13 số đo khung hình đúng định nghĩa ticket (avg, 1% low với k = max(1, ceil(0.01N)), p95)
+ok 101 - P4-14 camera bench: (30,15,0) lúc 0 s, ngược chiều kim đồng hồ nhìn từ trên (+X → −Z), 15 s một vòng
+ok 102 - P4-20 soak_cmd: 10 Đêm, 0 crash, kết quả tất định, RSS cuối ≤ 1.2 × đầu, đúng khóa output
+ok 103 - P4-21 input soak: đổi hướng đúng mỗi 30 tick; tỉ lệ nhảy/lướt/tỏa sáng/tương tác ≈ 5/3/2/10%
+ok 104 - P4-30 tên 3–12 ký tự [A-Za-z0-9_] (+ chữ tiếng Việt có dấu); mục cần ISO 8601 có múi giờ, nights_won 0–3
+ok 105 - P4-31 sắp xếp: điểm giảm dần, bằng điểm thì ai đạt trước đứng trên; giữ top 10
+ok 106 - P4-32 lưu ra đĩa qua server, còn sau khi khởi động lại; run_cmd --export-leaderboard xuất {"entries"} đúng thứ tự
+ok 107 - P4-40 đổi phím: đủ 9 hành động bắt buộc, phát hiện trùng phím, Esc không gán được, khôi phục mặc định, được lưu
+ok 108 - P4-41 cỡ chữ UI: mọi font-size ≥ 18px (× --fs), "Chữ lớn" = ×1.25
+ok 109 - P4-42 phụ đề/chỉ báo + giảm chuyển động có trong lớp web (kiểm tĩnh; ảnh trong evidence/phase-4)
+ok 110 - P2-130 bảng màu web trùng bảng ticket (lệch <= 10% mỗi kênh)
+ok 111 - P2-131 ánh sáng môi trường = 0.15 + 0.55 × (đèn sáng / tổng đèn)
+ok 112 - Kiến trúc: src/core không import three/DOM/Math.random/Date.now; web dùng palette và ambientIntensity
+ok 113 - P3-60 bảng màu dễ phân biệt: viền/mắt Bóng Mực \#00B3FF, cảnh báo UI \#FFFFFF; còn lại giữ bảng chuẩn
+ok 114 - P3-61 nhấp nháy chậm 1 Hz: sáng nửa đầu mỗi giây, tối nửa sau
+ok 115 - P3-62 cài đặt "Bảng màu dễ phân biệt" được lưu (mặc định tắt, giá trị sai kiểu → mặc định)
+# tests 115
+# pass 115
+# fail 0
+# duration_ms 8655.7509

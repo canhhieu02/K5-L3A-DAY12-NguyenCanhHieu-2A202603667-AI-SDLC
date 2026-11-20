@@ -1,0 +1,13 @@
+# 2026-11-20T18:35:53.771Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 48c4976
+$ npm run build
+exit=0
+✓ built in 1.94s
+Chrome headless (SwiftShader, 1280×720), vite preview bản build:
+web-menu: ảnh có, lỗi console: không → ĐẠT
+web-night1 (?night=1): ảnh có, lỗi console: không → ĐẠT
+web-bench-scene (?bench=1&seed=42&duration=1): ảnh có, lỗi console: không → ĐẠT
+web-settings-keys (?screen=settings): ảnh có, lỗi console: không → ĐẠT
+web-settings-large (?screen=settings&large=1): ảnh có, lỗi console: không → ĐẠT
+web-leaderboard (?screen=board): ảnh có, lỗi console: không → ĐẠT
+web-a11y-captions (?night=1&demo=a11y): ảnh có, lỗi console: không → ĐẠT
+web-a11y-captions-colorblind-large (?night=1&demo=a11y&cb=1&large=1): ảnh có, lỗi console: không → ĐẠT

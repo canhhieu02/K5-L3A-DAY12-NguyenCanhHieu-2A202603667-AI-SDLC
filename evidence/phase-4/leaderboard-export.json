@@ -1,0 +1,74 @@
+{
+  "entries": [
+    {
+      "name": "Mây",
+      "score": 1210,
+      "nights_won": 3,
+      "achieved_at": "2026-11-21T20:00:00+07:00",
+      "seed": 42
+    },
+    {
+      "name": "Tie_Early",
+      "score": 640,
+      "nights_won": 2,
+      "achieved_at": "2026-11-21T20:00:00+07:00",
+      "seed": 42
+    },
+    {
+      "name": "Tie_Late",
+      "score": 640,
+      "nights_won": 2,
+      "achieved_at": "2026-11-21T14:00:00Z",
+      "seed": 42
+    },
+    {
+      "name": "Player_8",
+      "score": 180,
+      "nights_won": 1,
+      "achieved_at": "2026-11-21T08:00:00Z",
+      "seed": 42
+    },
+    {
+      "name": "Player_7",
+      "score": 170,
+      "nights_won": 1,
+      "achieved_at": "2026-11-21T07:00:00Z",
+      "seed": 42
+    },
+    {
+      "name": "Player_6",
+      "score": 160,
+      "nights_won": 1,
+      "achieved_at": "2026-11-21T06:00:00Z",
+      "seed": 42
+    },
+    {
+      "name": "Player_5",
+      "score": 150,
+      "nights_won": 1,
+      "achieved_at": "2026-11-21T05:00:00Z",
+      "seed": 42
+    },
+    {
+      "name": "Player_4",
+      "score": 140,
+      "nights_won": 1,
+      "achieved_at": "2026-11-21T04:00:00Z",
+      "seed": 42
+    },
+    {
+      "name": "Player_3",
+      "score": 130,
+      "nights_won": 1,
+      "achieved_at": "2026-11-21T03:00:00Z",
+      "seed": 42
+    },
+    {
+      "name": "Player_2",
+      "score": 120,
+      "nights_won": 1,
+      "achieved_at": "2026-11-21T02:00:00Z",
+      "seed": 42
+    }
+  ]
+}
