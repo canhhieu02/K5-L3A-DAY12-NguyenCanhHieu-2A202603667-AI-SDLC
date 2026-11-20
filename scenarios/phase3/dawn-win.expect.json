@@ -1,0 +1,4 @@
+{ "night": 2, "ticks": 100, "about": "Đêm 2 (6 đèn, cần ceil(0.6 × 6) = 4): 4 đèn sáng lúc bình minh (tick 60) → thắng dawn_survived; điểm = 4 × 50 + floor(fuel) (99, 99, 99, 39) + 3 × 50",
+  "events": [ { "tick": 60, "name": "game_over", "data": { "result": "won", "reason": "dawn_survived" } } ],
+  "checks": [ { "tick": 59, "path": "state", "equals": "playing" }, { "tick": 60, "path": "state", "equals": "won" },
+              { "tick": 60, "path": "score", "equals": 686 }, { "tick": 60, "path": "lanterns.4.fuel", "equals": 39.5 } ] }

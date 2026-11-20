@@ -1,0 +1,10 @@
+{ "night": 1, "ticks": 300, "about": "Đèn yếu (fuel 20 < 30, mất vùng an toàn): Bóng Mực wander đi 2 m/s tới, cách ≤ 2 m ở tick 90 thì drain, hút 5/s + hao 1/s; fuel_drain mỗi 60 tick; đèn tắt ở tick 275, Bóng Mực về wander",
+  "events": [ { "tick": 150, "name": "fuel_drain", "data": { "lantern_id": "L1", "shade_id": "S1", "fuel": 12.5 } },
+              { "tick": 210, "name": "fuel_drain", "data": { "lantern_id": "L1", "shade_id": "S1", "fuel": 6.5 } },
+              { "tick": 270, "name": "fuel_drain", "data": { "lantern_id": "L1", "shade_id": "S1", "fuel": 0.5 } },
+              { "tick": 275, "name": "lantern_out", "data": { "lantern_id": "L1" } } ],
+  "no_events": [ "player_hit", "game_over" ],
+  "checks": [ { "tick": 89, "path": "shades.0.state", "equals": "wander" }, { "tick": 90, "path": "shades.0.state", "equals": "drain" },
+              { "tick": 90, "path": "lanterns.0.fuel", "equals": 18.5 },
+              { "tick": 274, "path": "shades.0.state", "equals": "drain" }, { "tick": 275, "path": "shades.0.state", "equals": "wander" },
+              { "tick": 275, "path": "lanterns.0.ever_lit", "equals": true }, { "tick": 275, "path": "lanterns.0.fuel", "equals": 0 } ] }

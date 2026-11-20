@@ -1,0 +1,3 @@
+{ "night": 1, "ticks": 2, "about": "Sức chứa = min(20, 10 + 2 × successful_lights): 5 lần thắp → 20; đứng trên 22 đom đóm chỉ nhặt 20",
+  "checks": [ { "tick": 0, "path": "player.capacity", "equals": 20 }, { "tick": 1, "path": "player.carried", "equals": 20 },
+              { "tick": 1, "path": "motes_active", "equals": 2 }, { "tick": 0, "path": "time_left_s", "equals": 240 } ] }

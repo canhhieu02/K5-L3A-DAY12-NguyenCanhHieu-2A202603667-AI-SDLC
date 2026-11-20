@@ -70,3 +70,24 @@ Góc: θ đo từ +X; điểm ở góc θ bán kính r là `(r·cosθ, y, r·sin
 | A2-32 | Bóng Mực khi Mây đang chờ hồi sinh | Mây "không có mặt": Bóng Mực đang `chase` chuyển `wander`, không phát hiện được Mây | "Không bị chạm" trong lúc chờ | P2-26 | Phase 2 |
 | A2-33 | Bóng Mực vừa bị đẩy khỏi vùng đèn trong lúc đang bị Tỏa Sáng đẩy lùi | Hủy phần đẩy lùi còn dở; vẫn giữ choáng | Tránh hai lực đẩy chồng nhau | AC-23 | Phase 2 |
 | A2-29 | Tổng điểm | Headless: điểm của Đêm đang chạy. Web: tổng điểm các Đêm đã thắng (chơi lại Đêm thua không cộng lần thua) | Ticket | P2-29, P2-82 | Phase 2 |
+
+## Phase 3 (TICKET-03 "Đèn cạn dầu", contract v1.2)
+
+Luật bị ticket thay thế: A1-4/A2-13 (vùng an toàn chỉ còn khi fuel ≥ 30), A2-29/P2-29 (bảng điểm), A1-5/P2-28 (thắng ở bình minh, không còn `all_lit`). Quyết định mô hình: [adr/0001-lantern-fuel-and-dawn-win.md](adr/0001-lantern-fuel-and-dawn-win.md).
+
+| ID | Chưa quy định | Giả định | Lý do | Kiểm chứng | Trạng thái |
+|---|---|---|---|---|---|
+| A3-1 | Khóa điểm mới trong `tuning.score` | `per_mote` 5, `per_lantern` 100, `per_relight` 40, `per_stun` 5, `per_stun_drain` 15 (tổng, không cộng thêm 5), `per_lantern_dawn` 50, `per_flame_left` 50; **bỏ** `per_second_left` | Ticket chỉ liệt kê khóa mới cho dầu/thắng, không nói `score`; "thưởng thời gian: bỏ" | P3-01, P3-23, P3-32 | Hỏi GV |
+| A3-2 | "Không có thì đi về đèn tắt gần nhất **như trước**" | Bản của mình trước đây `wander` lượn ngẫu nhiên (A2-9). Từ Phase 3: `wander` đi thẳng 2 m/s (tốc độ wander A2-9) tới đèn yếu gần nhất; không có đèn yếu thì tới đèn tắt gần nhất; tới trong 2 m của đèn tắt, hoặc không còn đèn tắt/yếu nào, thì lượn ngẫu nhiên như A2-9 | Theo câu chữ ticket; giữ một tốc độ cho `wander` | P3-25 | Hỏi GV |
+| A3-3 | Đường tới đèn bị chặn (biển mây giữa 2 đảo Đêm 2, tháp chuông Đêm 3) | Thử đi thẳng; không được thì trượt theo trục X hoặc Z; vẫn không được thì bước lượn ngẫu nhiên tick đó | Tránh kẹt, tất định | đọc code | Phase 3 |
+| A3-4 | Lúc nào chuyển `drain`, lúc nào bắt đầu hút | Xét ở bước 8 (trước và sau khi bước tới): cách đèn yếu ≤ 2 m (XZ, dung sai 1e-9) → `drain` ngay tick đó, đứng yên. Hút bắt đầu ở bước 2 của tick sau | Bước 2 là chỗ ticket đặt "trừ dầu" | P3-20, P3-25 | Phase 3 |
+| A3-5 | "Đèn đầy dầu không được chọn" vs thứ tự tick | Dầu hao ở bước 2, tương tác ở bước 5, nên lúc bấm E đèn sáng **không bao giờ** còn đúng 100 (vừa thắp/châm đầy thì tick sau đã 99.983) → vẫn được chọn và nhận `used = 1`. Luật "đầy dầu không được chọn" vẫn cài đặt (dùng khi fuel = 100 thật) | Làm đúng thứ tự tick bắt buộc | P2-17, P3-12 | Hỏi GV |
+| A3-6 | Nhịp ghi `fuel_drain` | Mỗi con đếm số tick đã hút liên tục; ghi khi đếm = 60, 120, … (tick đầu tiên hút là 1). `fuel` = dầu sau mọi khoản trừ của tick đó (làm tròn 1 chữ số). Nhiều con: theo id tăng dần; trước `lantern_out` cùng tick. Rời `drain` thì đếm lại từ 0 | "Ghi mỗi 60 tick khi đang hút" | P3-21 | Hỏi GV |
+| A3-7 | Scenario đèn v1.2 | `fuel` ∈ [0, 100] (sai → mã 2); chỉ dùng khi `lit: true` (đèn tắt luôn fuel 0); `ever_lit` mặc định = `lit`; nhận thêm `relit_count` (số nguyên ≥ 0); `deposited` giữ như v1.1. `lit: true, fuel: 0` → tắt ở tick 1 | Ticket chỉ nói "đặt lit, fuel, ever_lit" | P3-11, P3-42 | Phase 3 |
+| A3-8 | `shades[].target_lantern_id` | Chỉ có nghĩa với `state: "drain"`: đèn đang bị hút. Thiếu hoặc id không có → đèn gần nhất. Trạng thái khác bỏ qua (đích của `wander` tính lại mỗi tick). Không xuất trong snapshot | Snapshot v1.2 không liệt kê trường đích | P3-21…24 | Hỏi GV |
+| A3-9 | Thời điểm rời `drain` | Đèn tắt: ngay sau bước 2 (trước Tỏa Sáng cùng tick). Châm lên ≥ 30: ngay ở bước 5, rồi bước 6 đẩy ra. Bị đẩy khỏi vùng của đèn khác: lúc bắt đầu đẩy. Mây trong 6 m / cách đèn > 2 m: bước 8 (chuyển `chase` thì đi luôn tick đó như `wander` → `chase`). `drain` không gây hit (hit chỉ xét `chase`/`wander`) | Giữ trạng thái đúng với thực tế tại mỗi bước | P3-21…24 | Phase 3 |
+| A3-10 | Đèn tắt rồi thắp lại | `deposited` về 0 khi tắt; thắp lại cần `relight_cost` (5) tính từ 0; sau khi thắp lại `deposited` = 5; `relit_count` +1 mỗi lần thắp lại | "deposited = 0" khi hết dầu | P3-13 | Phase 3 |
+| A3-11 | `floor(fuel)` khi bình minh | Lấy từ dầu nội bộ chính xác (đơn vị 1/60), không phải số đã làm tròn 1 chữ số (99.983 → 99, không phải 100) | Ticket: chỉ làm tròn khi xuất | P3-32 | Phase 3 |
+| A3-12 | Đèn yếu (fuel < 30) | Vẫn là đèn **đang sáng**: tính vào điều kiện thắng, ánh sáng môi trường, thưởng bình minh | Ticket chỉ bỏ vùng an toàn | P3-30 | Phase 3 |
+| A3-13 | `carried` lớn hơn sức chứa (scenario) | Giữ nguyên, chỉ không nhặt thêm | Như A1-18 | P3-14 | Phase 3 |
+| A3-14 | Web: nút "Thắng Đêm này" của chế độ thử | Thắp mọi đèn đầy dầu (không cộng điểm thắp) và tua thời gian để tick kế tiếp là bình minh; core xét thắng như thường. Headless không dùng | Không còn thắng sớm nên thắp hết không đủ | `debug-mode.test.js` | Phase 3 |

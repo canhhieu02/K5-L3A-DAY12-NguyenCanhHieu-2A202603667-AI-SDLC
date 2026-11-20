@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Sinh bằng chứng Phase 2 vào evidence/phase-2/ từ lệnh chạy thật (không sửa tay file trong evidence/).
+// Sinh bằng chứng phase hiện hành (PHASE, mặc định 3) vào evidence/phase-N/ từ lệnh chạy thật (không sửa tay file trong evidence/).
 //   node scripts/evidence.mjs [test] [scenarios] [determinism] [perf] [web] [clone]   (không tham số = tất cả)
+//   PHASE=2 node scripts/evidence.mjs scenarios   → chạy lại scenario Phase 2 (để đối chiếu, ghi vào evidence/phase-2/)
 // Cần commit trước khi chạy "clone" (clone sạch lấy HEAD).
 import fs from 'node:fs';
 import os from 'node:os';
@@ -10,9 +11,10 @@ import { spawnSync, spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = path.join(ROOT, 'evidence', 'phase-2');
+const PHASE = process.env.PHASE || '3';
+const OUT = process.env.EVIDENCE_OUT || path.join(ROOT, 'evidence', `phase-${PHASE}`); // EVIDENCE_OUT: thử nghiệm, không ghi đè bằng chứng
 const CLI = path.join(ROOT, 'src', 'headless', 'cli.js');
-const SC = path.join(ROOT, 'scenarios', 'phase2');
+const SC = path.join(ROOT, 'scenarios', `phase${PHASE}`);
 fs.mkdirSync(OUT, { recursive: true });
 
 const sh = (cmd, args, opts = {}) => spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', shell: process.platform === 'win32', ...opts });
@@ -20,7 +22,7 @@ const git = (...a) => spawnSync('git', a, { cwd: ROOT, encoding: 'utf8' }).stdou
 // chỉ xét file đã theo dõi: bằng chứng đang sinh và file cục bộ chưa theo dõi không tính là "thay đổi"
 const header = () => `# ${new Date().toISOString()} | node ${process.version} | ${os.type()} ${os.release()} | commit ${git('rev-parse', '--short', 'HEAD')}${git('status', '--porcelain', '--untracked-files=no') ? ' (+ thay đổi chưa commit)' : ''}\n`;
 const built = (s) => (s.replace(/\x1b\[[0-9;]*m/g, '').match(/✓ built in .*/) || [''])[0];
-const write = (name, text) => { fs.writeFileSync(path.join(OUT, name), text); console.log(`→ evidence/phase-2/${name}`); };
+const write = (name, text) => { fs.writeFileSync(path.join(OUT, name), text); console.log(`→ evidence/phase-${PHASE}/${name}`); };
 const sha = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex').slice(0, 16);
 const rel = (p) => path.relative(ROOT, p).replaceAll('\\', '/');
 
@@ -71,7 +73,7 @@ function runScenarios() {
     // Giữ file jsonl gọn: event + snapshot ở các tick được kiểm + end
     const keep = new Set((exp.checks || []).map((c) => c.tick));
     fs.writeFileSync(out, lines.filter((l) => l.type !== 'snapshot' || keep.has(l.tick) || l.tick === 0).map((l) => JSON.stringify(l)).join('\n') + '\n');
-    text += `\n## ${name} — ${pass ? 'ĐẠT' : 'KHÔNG ĐẠT'}\n${exp.about}\n$ node src/headless/cli.js ${args.map((a) => (a.startsWith(ROOT) ? rel(a) : a)).join(' ')} --out evidence/phase-2/${name}.jsonl --snapshot-every 1\nexit=${r.code}\n`;
+    text += `\n## ${name} — ${pass ? 'ĐẠT' : 'KHÔNG ĐẠT'}\n${exp.about}\n$ node src/headless/cli.js ${args.map((a) => (a.startsWith(ROOT) ? rel(a) : a)).join(' ')} --out evidence/phase-${PHASE}/${name}.jsonl --snapshot-every 1\nexit=${r.code}\n`;
     text += res.map(([ok, s]) => `  [${ok ? 'x' : ' '}] ${s}`).join('\n') + '\n';
   }
   write('scenarios.txt', text);
@@ -87,7 +89,7 @@ function runDeterminism() {
   let text = header();
   let ok = true;
   for (const night of [1, 2, 3]) {
-    const ticks = { 1: 18000, 2: 19800, 3: 21600 }[night];
+    const ticks = { 1: 14400, 2: 16200, 3: 18000 }[night]; // trọn một Đêm v1.2 (240/270/300 s)
     const runs = [2026, 2026, 2027].map((seed, i) => {
       const f = path.join(tmp, `n${night}-${i}.jsonl`);
       const r = headless(['--seed', String(seed), '--night', String(night), '--ticks', String(ticks), '--inputs', inputs], f);
@@ -145,7 +147,8 @@ async function runWeb() {
   try {
     for (let i = 0; i < 40; i++) { try { await fetch(`http://localhost:${port}/`); break; } catch { await new Promise((r) => setTimeout(r, 250)); } }
     text += `Chrome headless (SwiftShader, 1280×720), vite preview bản build:\n`;
-    for (const [name, q] of [['web-menu', ''], ['web-night1', '?night=1'], ['web-night2', '?night=2'], ['web-night3', '?night=3']]) {
+    for (const [name, q] of [['web-menu', ''], ['web-night1', '?night=1'], ['web-night2', '?night=2'], ['web-night3', '?night=3'],
+      ['web-fuel-demo', '?night=1&demo=fuel'], ['web-fuel-demo-colorblind', '?night=1&demo=fuel&cb=1']]) {
       const prof = fs.mkdtempSync(path.join(os.tmpdir(), 'ddl-chrome-'));
       const png = path.join(OUT, `${name}.png`);
       const r = spawnSync(chrome, ['--headless=new', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--window-size=1280,720',

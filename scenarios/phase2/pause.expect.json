@@ -1,5 +1,5 @@
-{ "night": 1, "ticks": 40, "about": "Tạm dừng ở tick 11 → tick vẫn tăng, sim_tick/thời gian/vị trí đứng yên, state paused; tiếp tục ở tick 21",
+{ "night": 1, "ticks": 40, "about": "Tạm dừng ở tick 11 → tick vẫn tăng, sim_tick/thời gian/vị trí đứng yên, state paused; tiếp tục ở tick 21. Cập nhật Phase 3: Đêm 1 = 240 s (TICKET-03 mục 3) nên time_left_s 299.833 → 239.833",
   "events": [ { "tick": 11, "name": "paused", "data": {} }, { "tick": 21, "name": "resumed", "data": {} } ],
   "checks": [ { "tick": 15, "path": "state", "equals": "paused" }, { "tick": 15, "path": "sim_tick", "equals": 10 },
-              { "tick": 15, "path": "time_left_s", "equals": 299.833 }, { "tick": 15, "path": "player.pos", "equals": [0, 0, 1] },
+              { "tick": 15, "path": "time_left_s", "equals": 239.833 }, { "tick": 15, "path": "player.pos", "equals": [0, 0, 1] },
               { "tick": 21, "path": "sim_tick", "equals": 11 }, { "tick": 40, "path": "player.pos", "equals": [0, 0, 3] } ] }

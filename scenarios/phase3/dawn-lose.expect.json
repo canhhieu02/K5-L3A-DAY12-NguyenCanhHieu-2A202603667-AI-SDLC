@@ -1,0 +1,3 @@
+{ "night": 3, "ticks": 100, "about": "Đêm 3 (7 đèn, cần 5): chỉ 4 đèn sáng lúc bình minh → thua dawn, không có thưởng; thời lượng Đêm 3 = 300 s",
+  "events": [ { "tick": 60, "name": "game_over", "data": { "result": "lost", "reason": "dawn" } } ],
+  "checks": [ { "tick": 0, "path": "time_left_s", "equals": 1 }, { "tick": 60, "path": "state", "equals": "lost" }, { "tick": 60, "path": "score", "equals": 0 } ] }

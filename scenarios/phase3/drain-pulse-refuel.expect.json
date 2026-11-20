@@ -1,0 +1,7 @@
+{ "night": 1, "ticks": 60, "about": "Bóng Mực đang drain trúng Tỏa Sáng: stunned, tổng +15. Châm 2 đom đóm ở tick 3: 1192 + 1200 đơn vị = 39.9 ≥ 30 → đèn có lại vùng an toàn, Bóng Mực bị đẩy ra mép 6 m, không ai bị đánh",
+  "events": [ { "tick": 1, "name": "pulse", "data": { "stunned_ids": [ "S1" ] } },
+              { "tick": 3, "name": "refuel", "data": { "lantern_id": "L1", "amount": 2, "fuel": 39.9 } } ],
+  "no_events": [ "player_hit", "fuel_drain", "lantern_out" ],
+  "checks": [ { "tick": 1, "path": "score", "equals": 15 }, { "tick": 1, "path": "shades.0.state", "equals": "stunned" },
+              { "tick": 1, "path": "player.carried", "equals": 2 }, { "tick": 3, "path": "score", "equals": 25 },
+              { "tick": 3, "path": "player.carried", "equals": 0 }, { "tick": 60, "path": "lanterns.0.fuel", "equals": 38.9 } ] }

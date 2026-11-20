@@ -1,0 +1,13 @@
+{ "night": 1, "ticks": 130, "about": "Đèn L1 còn 1 dầu → tắt ở tick 60 (lantern_out, nhớ ever_lit) → thắp lại bằng 5 đom đóm ở tick 61 (relight, +40, sức chứa 12) → châm dầu 1 đom đóm ở tick 121 (99 → 100)",
+  "events": [ { "tick": 60, "name": "lantern_out", "data": { "lantern_id": "L1" } },
+              { "tick": 61, "name": "deposit", "data": { "lantern_id": "L1", "amount": 5, "deposited": 5 } },
+              { "tick": 61, "name": "lantern_lit", "data": { "lantern_id": "L1", "relight": true } },
+              { "tick": 121, "name": "refuel", "data": { "lantern_id": "L1", "amount": 1, "fuel": 100 } } ],
+  "no_events": [ "game_over" ],
+  "checks": [ { "tick": 59, "path": "lanterns.0.fuel", "equals": 0 }, { "tick": 59, "path": "lanterns.0.lit", "equals": true },
+              { "tick": 60, "path": "lanterns.0.lit", "equals": false }, { "tick": 60, "path": "lanterns.0.ever_lit", "equals": true },
+              { "tick": 60, "path": "lanterns.0.deposited", "equals": 0 },
+              { "tick": 61, "path": "lanterns.0.fuel", "equals": 100 }, { "tick": 61, "path": "lanterns.0.relit_count", "equals": 1 },
+              { "tick": 61, "path": "player.capacity", "equals": 12 }, { "tick": 61, "path": "score", "equals": 65 },
+              { "tick": 120, "path": "lanterns.0.fuel", "equals": 99 },
+              { "tick": 121, "path": "player.carried", "equals": 3 }, { "tick": 121, "path": "score", "equals": 70 } ] }
