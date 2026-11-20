@@ -86,7 +86,10 @@ _(Phase 1 tập trung phần lõi; chưa có phần sáng tạo ngoài phong cá
 | Giả định | [docs/assumptions.md](docs/assumptions.md) |
 | Bằng chứng | [evidence/README.md](evidence/README.md) |
 | Nhật ký AI / token | [docs/ai-log.md](docs/ai-log.md) |
-| Harness AI | [CLAUDE.md](CLAUDE.md) |
+| Tiêu chí nghiệm thu Phase 2 | [docs/phases/phase-2.md](docs/phases/phase-2.md) (ticket: [ticket-02.md](docs/phases/ticket-02.md)) |
+| Harness AI | [AGENTS.md](AGENTS.md) (dùng chung), [CLAUDE.md](CLAUDE.md), skill trong [.claude/skills/](.claude/skills/): `add-rule`, `headless-scenario`, `phase-evidence` |
+| Scenario mẫu Phase 2 + kỳ vọng | [scenarios/phase2/](scenarios/phase2/) |
+| Sinh bằng chứng | `node scripts/evidence.mjs` |
 
 ## Cấu trúc
 

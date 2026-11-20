@@ -25,7 +25,8 @@ Quy ước: `T.x` = khóa `tuning` trong `game.contract.json` (= `src/core/tunin
 | 4 | Xong | `tests/phase2-maps.test.js`: P2-03 (Đêm 2/3), 23 (4.5 m/s), 30 (lịch Đêm 2/3), 50, 52–56. Chạy 21 600 tick Đêm 2/3: ~0.35 s, hai lần chạy giống hệt từng byte |
 | 5 | Xong | `tests/phase2-features.test.js`: P2-41 (drifters/charms), 60–65, 70–74 |
 | 6 | Xong phần code; chờ chơi thử | `tests/web-palette.test.js`: P2-130, P2-131 + kiểm tra kiến trúc core. Chrome headless mở `?night=1/2/3` không có lỗi console (chỉ kiểm tra khởi động + HUD). P2-80…122, P2-132 (FPS) cần chơi thử trên máy thật — bước 8 |
-| 7–8 | Chưa | |
+| 7 | Xong | `AGENTS.md` (mới, dùng chung), `CLAUDE.md` import AGENTS.md, skill `.claude/skills/{add-rule,headless-scenario,phase-evidence}` |
+| 8 | Xong phần tự động; chờ chơi tay | `scenarios/phase2/` (7 scenario, kỳ vọng ghi trước) + `scripts/evidence.mjs` → `evidence/phase-2/` |
 
 ## A. Số liệu chuẩn và contract (Phần 1, Phần 4)
 
