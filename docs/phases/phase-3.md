@@ -102,7 +102,14 @@ Test Phase 1–2 **không** bị luật mới thay (di chuyển, nhảy, lướt
 
 ## Đánh giá cuối phase
 
-_(Cập nhật sau khi sinh bằng chứng — xem cuối file.)_
+- **Đạt (có bằng chứng, commit 19fde37):** `npm test` 101/101 (gồm AC Phase 1 + P2 còn hiệu lực, 19 test P3 mới); 6/6 scenario Phase 3 khớp kỳ vọng ghi trước ngay lần chạy đầu; scenario Phase 2 còn 7/7 sau khi cập nhật `pause` (thời lượng); tất định 3 Đêm; 21 600 tick ≤ 1.1 s; build + 6 ảnh Chrome headless không lỗi console (gồm cảnh dầu đèn và bảng màu dễ phân biệt); clone sạch. Chi tiết: [evidence/README.md](../../evidence/README.md#phase-3-ticket-03-test-contract-v12).
+- **Chưa kiểm chứng:** chơi tay trọn Đêm với luật mới (đèn tắt/thắp lại, thắng/thua thật ở bình minh), nhấp nháy 1 Hz khi đang chạy, cài đặt mù màu còn sau khi mở lại trình duyệt (chỉ có test giả lập localStorage), âm thanh mới, FPS.
+- **Rủi ro với test ẩn:**
+  - A3-1 (tên khóa `score`, bỏ `per_second_left`): nếu máy chấm so nguyên `tuning` với bảng của họ sẽ lệch ở `score`.
+  - A3-2 (`wander` đi về đèn tắt gần nhất ở 2 m/s): ảnh hưởng thời điểm Bóng Mực tới đèn yếu (`drain` sớm/muộn) và vị trí Bóng Mực trong game mặc định.
+  - A3-5 (đèn sáng lúc bấm E luôn chưa đầy): test ẩn kỳ vọng "đèn 100 không nhận châm" sẽ trượt — nhưng đó là hệ quả đúng của thứ tự tick bắt buộc.
+  - A3-6 (nhịp `fuel_drain`), A3-8 (`target_lantern_id`), A3-7 (`ever_lit` mặc định = `lit`).
+- **Lỗi AI và cách xử lý:** 2 lỗi trong test tự viết, đều phát hiện nhờ test đỏ và đọc lại luật trước khi sửa (không sửa core): `invuln_ticks: 59` hết ở tick 59 chứ không phải 60 (A2-4); thắp lại L2 nhưng L1 vừa thắp gần hơn và đã hao nên "cướp" lượt E (A3-5) → cho Mây đi lại gần L2 trước. Một test cũ (P2-17) đỏ đúng do luật mới → cập nhật có lý do. Heredoc bash hỏng khi script chứa backtick → chuyển script sửa file sang tệp tạm.
 
 ## Câu hỏi mở cho giảng viên
 

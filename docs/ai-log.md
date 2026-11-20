@@ -32,6 +32,11 @@
 | Phase 2 | 2 | Người học chơi thử: "phím di chuyển đôi khi không làm được" | Nguyên nhân khả dĩ: nút vừa bấm giữ focus (Space bấm lại "Tiếp tục" → tạm dừng), bộ gõ Unikey làm thiếu `e.code` | Bỏ focus khi vào chơi, suy mã phím từ `e.key`, hướng dẫn tắt Unikey; người học không báo lỗi lại (chưa tái hiện được chắc chắn nguyên nhân) | |
 | Phase 2 | 2 | Người học yêu cầu "chế độ thử": chọn Đêm, qua Đêm, thắng Đêm | Làm đúng; nút thắng chỉ thắp đèn, core tự xét thắng nên luồng thật được kiểm | Test riêng: headless không gọi hàm debug | |
 | Phase 2 | 2 | Bước 7–8: AGENTS.md, 3 skill, bằng chứng tự động + 7 ảnh người học chơi | 79/79 test, 6/6 phần bằng chứng tự động ĐẠT; FPS TB 81–98 | Phần chỉ quan sát (âm thanh, cài đặt) ghi rõ "Đạt (quan sát)"; mục chưa có ảnh để "Chưa có ảnh" | |
+| Phase 3 | 3 | `/clear` rồi dán nguyên văn TICKET-03 (change request); AI lưu `ticket-03.md`, đọc toàn bộ core/test/docs để xác định luật bị [THAY THẾ] | Đúng | — | |
+| Phase 3 | 3 | Core: dầu đèn bằng số nguyên 1/60, `drain`, thắng ở bình minh, sức chứa, điểm, contract v1.2 | 11 test cũ đỏ đúng dự đoán (luật bị thay); P2-17 đỏ ngoài dự đoán | Đọc lại thứ tự tick: dầu hao ở bước 2 trước tương tác bước 5 nên đèn "100" không còn đầy → hệ quả đúng của ticket; cập nhật test + ghi A3-5 và câu hỏi mở thay vì sửa core | |
+| Phase 3 | 3 | Test mới P3-xx (kỳ vọng tính tay) | Lỗi AI trong test: `invuln_ticks: 59` (hết ở tick 59, không phải 60); kịch bản thắp lại bị đèn sáng gần hơn "cướp" lượt E | Test đỏ → đọc luật/giả định (A2-4, A3-5) → sửa test, không sửa core; ghi bẫy vào skill `add-rule` | |
+| Phase 3 | 3 | Web: thanh dầu, nhấp nháy, đèn tắt xẹp + rách, chế độ mù màu | Vết rách lần đầu quá mờ trên nền đêm | AI tự chụp Chrome headless (`?demo=fuel`), xem ảnh → phóng to + màu đen | |
+| Phase 3 | 3 | Scenario Phase 3 (kỳ vọng ghi trước) + bằng chứng | 6/6 khớp lần đầu; scenario Phase 2 `pause` lệch do Đêm 1 còn 240 s | Chạy lại scenario Phase 2 vào thư mục tạm (`EVIDENCE_OUT`) để không ghi đè bằng chứng cũ; cập nhật kỳ vọng có ghi lý do | |
 
 ## Token / chi phí
 

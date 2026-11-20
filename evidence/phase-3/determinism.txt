@@ -1,0 +1,25 @@
+# 2026-11-20T17:17:19.640Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 19fde37
+
+## Đêm 1 (--ticks 14400, inputs cố định)
+seed 2026: exit=0 sha256=7f9fa3ffec46fb92 lines=128
+seed 2026: exit=0 sha256=7f9fa3ffec46fb92 lines=128
+seed 2027: exit=0 sha256=68310459dfd2a0a5 lines=203
+GIỐNG HỆT NHAU giữa 2 lần cùng seed; khác khi đổi seed
+Sự kiện (seed 2026): {"night_start":1,"dash":1,"shade_spawned":3,"player_hit":3,"game_over":1,"end":1}
+Dòng cuối: {"type":"end","ticks":1174,"state":"lost","score":0}
+
+## Đêm 2 (--ticks 16200, inputs cố định)
+seed 2026: exit=0 sha256=265f47c9c7ae2560 lines=148
+seed 2026: exit=0 sha256=265f47c9c7ae2560 lines=148
+seed 2027: exit=0 sha256=f6f95971a566d252 lines=148
+GIỐNG HỆT NHAU giữa 2 lần cùng seed; khác khi đổi seed
+Sự kiện (seed 2026): {"night_start":1,"dash":1,"shade_spawned":4,"player_hit":3,"game_over":1,"end":1}
+Dòng cuối: {"type":"end","ticks":1367,"state":"lost","score":0}
+
+## Đêm 3 (--ticks 18000, inputs cố định)
+seed 2026: exit=0 sha256=a28fa2089c0d361c lines=198
+seed 2026: exit=0 sha256=a28fa2089c0d361c lines=198
+seed 2027: exit=0 sha256=273a1bfa28ab22ed lines=288
+GIỐNG HỆT NHAU giữa 2 lần cùng seed; khác khi đổi seed
+Sự kiện (seed 2026): {"night_start":1,"dash":1,"shade_spawned":6,"player_hit":3,"mote_picked":1,"game_over":1,"end":1}
+Dòng cuối: {"type":"end","ticks":1838,"state":"lost","score":0}

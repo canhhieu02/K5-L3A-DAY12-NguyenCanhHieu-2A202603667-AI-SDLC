@@ -1,0 +1,23 @@
+# 2026-11-20T17:17:52.704Z | clone sạch tại commit 19fde37
+$ git clone <repo> ddl-clone-7cZqh0/repo
+exit=0
+$ npm ci
+exit=0
+added 12 packages in 3s
+$ npm test
+exit=0
+# tests 101
+# pass 101
+# fail 0
+$ node src/headless/cli.js --seed 7 --night 1 --ticks 600 --out o1.jsonl
+exit=0
+{"type":"end","ticks":600,"state":"playing","score":0}
+$ node src/headless/cli.js --seed 7 --night 2 --ticks 600 --out o2.jsonl
+exit=0
+{"type":"end","ticks":600,"state":"playing","score":0}
+$ node src/headless/cli.js --seed 7 --night 3 --ticks 600 --out o3.jsonl
+exit=0
+{"type":"end","ticks":600,"state":"playing","score":0}
+$ npm run build
+exit=0
+✓ built in 1.42s

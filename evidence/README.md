@@ -3,6 +3,23 @@
 Bằng chứng chỉ sinh từ lệnh chạy thật, không sửa tay. Mỗi phase một thư mục `evidence/phase-N/`. File này (bảng tóm tắt) là phần duy nhất viết tay.
 Môi trường: Windows 11 (Git Bash), Node v22.16.0. Headless thuần Node, không phụ thuộc OS.
 
+## Phase 3 (TICKET-03, Test Contract v1.2)
+
+Sinh bằng `node scripts/evidence.mjs` tại commit ghi ở dòng đầu mỗi file. Kỳ vọng scenario ghi trước trong `scenarios/phase3/*.expect.json`. Spec + bảng test cũ thay đổi: [docs/phases/phase-3.md](../docs/phases/phase-3.md).
+
+| Yêu cầu | Cách kiểm chứng | Bằng chứng | Kết quả |
+|---|---|---|---|
+| Dầu đèn, châm/thắp lại, `drain`, luật thắng bình minh, sức chứa, điểm, contract v1.2 (P3-01…P3-43) | `npm test`: 101 test (headless qua CLI thật), trong đó 19 test mới ở `tests/phase3-fuel.test.js` | [phase-3/test.txt](phase-3/test.txt) | Đạt 101/101 |
+| Test Phase 1–2 không bị thay vẫn đạt; test bị thay đã cập nhật có lý do, không skip | Cùng `npm test`; bảng "Test cũ thay đổi" trong `phase-3.md` | [phase-3/test.txt](phase-3/test.txt) | Đạt |
+| Kịch bản đầu-cuối: tắt → thắp lại → châm; Bóng Mực tìm tới đèn yếu và hút tới tắt; Tỏa Sáng trúng con đang hút + châm lên ≥ 30; thắng/thua bình minh Đêm 2/3; sức chứa 20 | 6 scenario, đối chiếu từng event/trường với kỳ vọng ghi trước | [phase-3/scenarios.txt](phase-3/scenarios.txt), `phase-3/<tên>.jsonl` | Đạt 6/6 (lần chạy đầu, không sửa kỳ vọng) |
+| Tất định 3 Đêm với luật mới (Bóng Mực wander có đích) | Seed 2026 × 2 so sha256, seed 2027 phải khác; chạy tới hết Đêm v1.2 hoặc khi kết thúc | [phase-3/determinism.txt](phase-3/determinism.txt) | Đạt |
+| 21 600 tick mỗi Đêm ≤ 30 s | Đo thời gian thật | [phase-3/perf.txt](phase-3/perf.txt) | Đạt (0.6–1.0 s) |
+| Web: thanh dầu, đèn yếu (thanh đỏ, nhấp nháy), đèn tắt xẹp + rách, Bóng Mực đang hút, HUD `6/14`, "Đèn 2/5 · cần 3", cảnh báo sắp cạn dầu | Chrome headless 1280×720, `?night=1&demo=fuel` (cảnh dựng sẵn, chỉ web) | [phase-3/web-fuel-demo.png](phase-3/web-fuel-demo.png), [phase-3/web.txt](phase-3/web.txt) | Đạt (ảnh tĩnh; nhấp nháy cần xem khi chơi) |
+| Bảng màu dễ phân biệt: viền/mắt Bóng Mực `#00B3FF`, cảnh báo trắng kèm ⚠ | Chrome headless `?…&cb=1`; test P3-60 so mã màu | [phase-3/web-fuel-demo-colorblind.png](phase-3/web-fuel-demo-colorblind.png) | Đạt |
+| Build + khởi động 3 Đêm không lỗi console | `npm run build`, Chrome headless menu + `?night=1/2/3` | [menu](phase-3/web-menu.png), [Đêm 1](phase-3/web-night1.png), [Đêm 2](phase-3/web-night2.png), [Đêm 3](phase-3/web-night3.png) | Đạt |
+| Clone sạch | clone HEAD → `npm ci` → `npm test` → headless 3 Đêm → build | [phase-3/clean-clone.txt](phase-3/clean-clone.txt) | Đạt |
+| Chơi tay: đèn tắt khi cạn dầu rồi thắp lại, châm dầu, Bóng Mực hút đèn, thắng + thua ở bình minh, cài đặt mù màu còn sau khi mở lại, FPS ≥ 30 | Người học chơi `npm run dev` | — | **Chưa kiểm chứng** (chờ người học) |
+
 ## Phase 2 (TICKET-02, Test Contract v1.1)
 
 Sinh bằng `node scripts/evidence.mjs` tại commit ghi ở dòng đầu mỗi file (skill `phase-evidence`). Kỳ vọng của scenario ghi trước trong `scenarios/phase2/*.expect.json`.
