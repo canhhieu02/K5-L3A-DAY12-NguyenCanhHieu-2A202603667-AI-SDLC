@@ -1,0 +1,6 @@
+# 2026-11-20T10:59:56.182Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 2fd5913
+Mỗi Đêm: --ticks 21600 --snapshot-every 10, scenario {time_left_s: 360, flames: 999} để chạy đủ 21 600 tick.
+
+Đêm 1: exit=0 end.ticks=21600 thời gian=0.33 s → ĐẠT (≤ 30 s)
+Đêm 2: exit=0 end.ticks=21600 thời gian=0.35 s → ĐẠT (≤ 30 s)
+Đêm 3: exit=0 end.ticks=21600 thời gian=0.52 s → ĐẠT (≤ 30 s)

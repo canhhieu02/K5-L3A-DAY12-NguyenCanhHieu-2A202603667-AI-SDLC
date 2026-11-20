@@ -1,0 +1,9 @@
+# 2026-11-20T10:59:59.976Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 2fd5913
+$ npm run build
+exit=0
+✓ built in 1.37s
+Chrome headless (SwiftShader, 1280×720), vite preview bản build:
+web-menu: ảnh có, lỗi console: không → ĐẠT
+web-night1 (?night=1): ảnh có, lỗi console: không → ĐẠT
+web-night2 (?night=2): ảnh có, lỗi console: không → ĐẠT
+web-night3 (?night=3): ảnh có, lỗi console: không → ĐẠT

@@ -1,0 +1,82 @@
+# 2026-11-20T10:59:54.064Z | node v22.16.0 | Windows_NT 10.0.26200 | commit 2fd5913
+
+## charm — ĐẠT
+Đêm 2: nhặt Bùa Gió C1 (35,0,0) ở tick 1 → 600 tick chạy 7.2 m/s (tick 1 còn 6 m/s: x = 34.5 − 0.1 − 59×0.12 = 27.32 ở tick 60); lướt ở tick 61 và lại ở tick 73 không chờ hồi chiêu; bùa có lại ở tick 2701
+$ node src/headless/cli.js --seed 1 --night 2 --ticks 2800 --snapshot-every 1 --scenario scenarios/phase2/charm.scenario.json --inputs scenarios/phase2/charm.inputs.json --out evidence/phase-2/charm.jsonl --snapshot-every 1
+exit=0
+  [x] event charm_picked @1 {"charm_id":"C1","charm_ticks":600}
+  [x] event dash @61 {}
+  [x] event dash @73 {}
+  [x] tick 60 player.pos = [27.32,0,0] ±0.001 (thực tế [27.32,0,0])
+  [x] tick 1 player.charm_s = 10 (thực tế 10)
+  [x] tick 1 charms.0.respawn_s = 45 (thực tế 45)
+  [x] tick 2700 charms.0.available = false (thực tế false)
+  [x] tick 2701 charms.0.available = true (thực tế true)
+
+## dash — ĐẠT
+Lướt 14 m/s x 12 tick theo hướng chạy; hồi chiêu 90 tick tính từ lúc bắt đầu (nhấn ở tick 40 bị bỏ qua)
+$ node src/headless/cli.js --seed 1 --night 1 --ticks 100 --snapshot-every 1 --scenario scenarios/phase2/dash.scenario.json --inputs scenarios/phase2/dash.inputs.json --out evidence/phase-2/dash.jsonl --snapshot-every 1
+exit=0
+  [x] event dash @1 {}
+  [x] event dash @91 {}
+  [x] không có event player_hit
+  [x] tick 12 player.pos = [0,0,2.8] (thực tế [0,0,2.8])
+  [x] tick 13 player.pos = [0,0,2.9] (thực tế [0,0,2.9])
+  [x] tick 1 player.dash_cd_s = 1.5 (thực tế 1.5)
+
+## drifter — ĐẠT
+Gió Lạc cách 10 m đuổi 7 m/s, tới 1.2 m ở tick 76 → cướp 3 (còn 5), chạy trốn; Tỏa Sáng ở tick 77 trúng nó → thả lại 3 đom đóm tại chỗ, biến mất ở tick 197
+$ node src/headless/cli.js --seed 1 --night 2 --ticks 200 --snapshot-every 1 --scenario scenarios/phase2/drifter.scenario.json --inputs scenarios/phase2/drifter.inputs.json --out evidence/phase-2/drifter.jsonl --snapshot-every 1
+exit=0
+  [x] event drifter_steal @76 {"drifter_id":"D1","amount":3,"carried":5}
+  [x] event pulse @77 {"stunned_ids":[]}
+  [x] event drifter_drop @77 {"drifter_id":"D1","amount":3}
+  [x] tick 1 drifters.0.state = "chase" (thực tế "chase")
+  [x] tick 76 drifters.0.state = "flee" (thực tế "flee")
+  [x] tick 77 motes_active = 3 (thực tế 3)
+  [x] tick 196 drifters.0.state = "flee" (thực tế "flee")
+  [x] tick 197 drifters.0.state = "removed" (thực tế "removed")
+  [x] tick 77 player.flames = 3 (thực tế 3)
+
+## fall-respawn — ĐẠT
+Ra khỏi mép đảo ở tick 6, rơi 61 tick tới Y < −10 (tick 67): −1 Ngọn Lửa, mất 5 đom đóm; 60 tick sau (tick 127) hồi sinh ở (0,0,0), bất tử 90 tick
+$ node src/headless/cli.js --seed 1 --night 1 --ticks 220 --snapshot-every 1 --scenario scenarios/phase2/fall-respawn.scenario.json --inputs scenarios/phase2/fall-respawn.inputs.json --out evidence/phase-2/fall-respawn.jsonl --snapshot-every 1
+exit=0
+  [x] event player_hit @67 {"by":"fall","flames":2,"dropped":0,"lost":5}
+  [x] tick 127 player.pos = [0,0,0] (thực tế [0,0,0])
+  [x] tick 127 player.invuln = true (thực tế true)
+  [x] tick 216 player.invuln = true (thực tế true)
+  [x] tick 217 player.invuln = false (thực tế false)
+  [x] tick 127 player.carried = 0 (thực tế 0)
+
+## launch-pad — ĐẠT
+Đêm 2: đứng trên bục (20,0,18) → bay vy 14 + 24 m/s về tâm đảo B, phím di chuyển không ghi đè; đáp sau 84 tick (1.4 s) ở (51.613, 0, 6.619) trong đảo B
+$ node src/headless/cli.js --seed 1 --night 2 --ticks 100 --snapshot-every 1 --scenario scenarios/phase2/launch-pad.scenario.json --inputs scenarios/phase2/launch-pad.inputs.json --out evidence/phase-2/launch-pad.jsonl --snapshot-every 1
+exit=0
+  [x] không có event player_hit
+  [x] tick 83 player.grounded = false (thực tế false)
+  [x] tick 84 player.grounded = true (thực tế true)
+  [x] tick 84 player.pos = [51.613,0,6.619] ±0.01 (thực tế [51.614,0,6.619])
+
+## pause — ĐẠT
+Tạm dừng ở tick 11 → tick vẫn tăng, sim_tick/thời gian/vị trí đứng yên, state paused; tiếp tục ở tick 21
+$ node src/headless/cli.js --seed 1 --night 1 --ticks 40 --snapshot-every 1 --scenario scenarios/phase2/pause.scenario.json --inputs scenarios/phase2/pause.inputs.json --out evidence/phase-2/pause.jsonl --snapshot-every 1
+exit=0
+  [x] event paused @11 {}
+  [x] event resumed @21 {}
+  [x] tick 15 state = "paused" (thực tế "paused")
+  [x] tick 15 sim_tick = 10 (thực tế 10)
+  [x] tick 15 time_left_s = 299.833 (thực tế 299.833)
+  [x] tick 15 player.pos = [0,0,1] (thực tế [0,0,1])
+  [x] tick 21 sim_tick = 11 (thực tế 11)
+  [x] tick 40 player.pos = [0,0,3] (thực tế [0,0,3])
+
+## wind — ĐẠT
+Đêm 3: cơn gió đầu ở tick 1800 kéo dài 300 tick (hết ở 2100), cơn tiếp ở 3600
+$ node src/headless/cli.js --seed 1 --night 3 --ticks 3700 --snapshot-every 1 --scenario scenarios/phase2/wind.scenario.json --inputs scenarios/phase2/wind.inputs.json --out evidence/phase-2/wind.jsonl --snapshot-every 1
+exit=0
+  [x] tick 1799 wind.active = false (thực tế false)
+  [x] tick 1800 wind.active = true (thực tế true)
+  [x] tick 2099 wind.active = true (thực tế true)
+  [x] tick 2100 wind.active = false (thực tế false)
+  [x] tick 3600 wind.active = true (thực tế true)

@@ -173,14 +173,23 @@ Số chuẩn khai trong `tuning`:
 
 ## F. DoD
 
-| Mục DoD | Đáp ứng bởi |
-|---|---|
-| Bằng chứng game chạy đúng | `evidence/phase-2/` (bước 8) |
-| Test ẩn Phase 1 vẫn đạt với số chuẩn | P2-02 |
-| Spec có AC cho từng mục Phần 3 | Mục E (E1–E8) |
-| AGENTS.md/skill cập nhật | bước 7 |
-| ≥ 1 scenario headless mỗi tính năng mới | P2-12, P2-26, P2-53, P2-56, P2-60…74, P2-90 (thư mục `scenarios/`) |
-| ≥ 30 FPS | P2-132 |
+| Mục DoD | Đáp ứng bởi | Trạng thái |
+|---|---|---|
+| Bằng chứng game chạy đúng | [evidence/README.md](../../evidence/README.md#phase-2-ticket-02-test-contract-v11), `evidence/phase-2/` | Đạt phần tự động; phần chơi tay chưa có |
+| Test ẩn Phase 1 vẫn đạt với số chuẩn | P2-02: AC-01…25 trong `npm test` | Đạt với cách hiểu của mình (xem rủi ro) |
+| Spec có AC cho từng mục Phần 3 | Mục E (E1–E8) | Đạt |
+| AGENTS.md/skill cập nhật, lịch sử git thể hiện | `AGENTS.md`, `CLAUDE.md`, `.claude/skills/*` (commit 9cb4956) | Đạt |
+| ≥ 1 scenario headless mỗi tính năng mới | `scenarios/phase2/` (7 scenario + kỳ vọng) + test P2-12, 26, 53, 56, 60…74, 90 | Đạt |
+| ≥ 30 FPS trung bình ở 1280×720 | P2-132 | **Chưa kiểm chứng** — cần đo trên máy thật |
+
+## Đánh giá cuối phase
+
+- **Đạt (có bằng chứng):** `npm test` 76/76 (gồm hồi quy Phase 1); 7/7 scenario khớp kỳ vọng ghi trước; tất định 3 Đêm; 21 600 tick ≤ 0.5 s; build + khởi động web 3 Đêm không lỗi console; clone sạch. Chi tiết: [evidence/README.md](../../evidence/README.md).
+- **Chưa kiểm chứng:** chơi tay chuỗi 3 Đêm, menu tạm dừng, cài đặt lưu lại, âm thanh, HUD khi ≤ 30 s, mũi tên chỉ đèn, FPS ≥ 30 trên máy thật; chạy trên macOS/Linux.
+- **Rủi ro với test ẩn:**
+  - Test Phase 1 bị đổi vì ticket đổi luật (AC-08/10/12 điểm khi nạp, AC-16 đẩy lùi 15 tick, AC-19/20 lịch sinh, AC-23 đẩy khỏi vùng 30 tick, AC-02 trường player v1.1). Nếu test ẩn vẫn kỳ vọng hành vi cũ sẽ trượt — đó là mâu thuẫn trong chính ticket.
+  - Giả định dễ lệch người chấm: A2-1 (đạt tốc độ ngay trong 1 tick), A2-3 (lướt trên không giữ vy), A2-10 (`spawning` 60 tick), A2-16 (xuất phát Đêm 3 (0,0,−12)), A2-18 (điểm sương), A2-23 (kiểu trường snapshot), A2-30 (`end.state` khi đang dừng), A2-31 (tích phân trọng lực), A2-35 (trường scenario drifters/charms).
+- **Lỗi AI và cách xử lý:** tích phân Euler làm nhảy thấp (1.167 m) → đổi vận tốc trung bình; sai số số thực ở mép cầu và Y < −10 → dung sai 1e-9 (phát hiện nhờ test và kỳ vọng ghi trước, không chép output); test tự viết sai thời điểm lướt/bùa → sửa test sau khi kiểm lại luật; script bằng chứng hỏng với đường dẫn có dấu → bỏ shell cho git/node.
 
 ## Câu hỏi mở cho giảng viên
 
