@@ -10,9 +10,22 @@ const hyp = (p, q) => Math.hypot(p[0] - q[0], p[2] - q[2]);
 
 test('AC-01 game.contract.json khớp tuning game đang dùng', () => {
   const c = JSON.parse(fs.readFileSync('game.contract.json', 'utf8'));
-  assert.equal(c.contract_version, '1.0');
+  assert.equal(c.contract_version, '1.1');
   assert.deepEqual(c.tuning, T);
   for (const k of ['team', 'build_cmd', 'run_cmd', 'headless_cmd']) assert.ok(c[k]);
+});
+
+test('P2-01 tuning = số chuẩn TICKET-02 Phần 1 (contract v1.1)', () => {
+  assert.deepEqual(T, {
+    player_speed: 6, carry_capacity: 10, lantern_cost: 10, lantern_count_night1: 5,
+    pickup_radius: 1.0, interact_radius: 2.0, pulse_cost: 3, pulse_radius: 5,
+    night1_duration_s: 300, flames: 3, invuln_s: 1.5, hit_drop_ratio: 0.5,
+    pulse_stun_s: 2, pulse_push_m: 4, pulse_cooldown_s: 3, safe_radius: 6,
+    shade_speed: 4, shade_hit_radius: 1.0, fall_enabled: true,
+    dash_speed: 14, dash_duration_s: 0.2, dash_cooldown_s: 1.5,
+    night2_duration_s: 330, night3_duration_s: 360,
+    score: { per_mote: 10, per_lantern: 100, per_stun: 5, per_second_left: 2, per_flame_left: 50 },
+  });
 });
 
 test('AC-02 output: snapshot tick 0 + mỗi N tick, dòng cuối là end', () => {
@@ -69,10 +82,11 @@ test('AC-08 nhặt đom đóm khi khoảng cách XZ <= pickup_radius, đúng tic
 });
 
 test('AC-09 không nhặt quá carry_capacity', () => {
-  const motes = Array.from({ length: 7 }, () => [0, 0, 0]);
+  const n = T.carry_capacity + 2;
+  const motes = Array.from({ length: n }, () => [0, 0, 0]);
   const r = runHeadless({ ticks: 1, scenario: empty({ motes }) });
   assert.equal(snapAt(r, 1).player.carried, T.carry_capacity);
-  assert.equal(snapAt(r, 1).motes_active, 7 - T.carry_capacity);
+  assert.equal(snapAt(r, 1).motes_active, n - T.carry_capacity);
 });
 
 test('AC-10 nạp đủ lantern_cost thì thắp đèn, cộng per_lantern', () => {
@@ -146,12 +160,12 @@ test('AC-15 hết giờ thì thua (dawn)', () => {
 test('AC-16 tỏa sáng: tốn pulse_cost, choáng + đẩy Bóng Mực trong pulse_radius, cộng per_stun', () => {
   const r = runHeadless({
     ticks: 200,
-    scenario: empty({ player: { carried: 2 }, shades: [{ id: 'S1', pos: [3, 1, 0] }, { id: 'S2', pos: [T.pulse_radius + 0.5, 1, 0] }] }),
+    scenario: empty({ player: { carried: T.pulse_cost + 1 }, shades: [{ id: 'S1', pos: [3, 1, 0] }, { id: 'S2', pos: [T.pulse_radius + 0.5, 1, 0] }] }),
     inputs: { frames: [{ tick: 0, pulse: true }] },
   });
   assert.deepEqual(ev(r, 'pulse')[0], { type: 'event', tick: 1, name: 'pulse', data: { stunned_ids: ['S1'] } });
   const s1 = snapAt(r, 1);
-  assert.equal(s1.player.carried, 2 - T.pulse_cost);
+  assert.equal(s1.player.carried, 1);
   assert.equal(s1.score, T.score.per_stun);
   const sh = s1.shades.find((s) => s.id === 'S1');
   assert.equal(sh.state, 'stunned');
@@ -163,14 +177,17 @@ test('AC-16 tỏa sáng: tốn pulse_cost, choáng + đẩy Bóng Mực trong pu
 });
 
 test('AC-17 tỏa sáng cần đủ ánh sáng và có hồi chiêu', () => {
-  const none = runHeadless({ ticks: 5, scenario: empty({ player: { carried: 0 } }), inputs: { frames: [{ tick: 0, pulse: true }] } });
+  const none = runHeadless({ ticks: 5, scenario: empty({ player: { carried: T.pulse_cost - 1 } }), inputs: { frames: [{ tick: 0, pulse: true }] } });
   assert.equal(ev(none, 'pulse').length, 0);
+  const cdT = Math.round(T.pulse_cooldown_s * 60);
   const cd = runHeadless({
-    ticks: 100,
-    scenario: empty({ player: { carried: 5 } }),
-    inputs: { frames: [{ tick: 0, pulse: true }, { tick: 1, pulse: false }, { tick: 2, pulse: true }, { tick: 3, pulse: false }, { tick: 60, pulse: true }] },
+    ticks: cdT + 20,
+    scenario: empty({ player: { carried: 2 * T.pulse_cost } }),
+    inputs: { frames: [{ tick: 0, pulse: true }, { tick: 1, pulse: false }, { tick: 2, pulse: true }, { tick: 3, pulse: false },
+      { tick: cdT - 1, pulse: true }, { tick: cdT, pulse: false }, { tick: cdT + 1, pulse: true }] },
   });
-  assert.deepEqual(ev(cd, 'pulse').map((e) => e.tick), [1, 1 + Math.round(T.pulse_cooldown_s * 60)]);
+  // nhấn ở tick cdT-1 (event tick cdT) còn hồi chiêu; nhấn ở tick cdT+1 thì được
+  assert.deepEqual(ev(cd, 'pulse').map((e) => e.tick), [1, cdT + 2]);
 });
 
 test('AC-18 Bóng Mực không vào safe_radius của đèn đã thắp', () => {
@@ -183,11 +200,12 @@ test('AC-23 đèn vừa thắp: Bóng Mực (kể cả đang choáng) trong safe
   // Choáng S1 ở tick 1 (đẩy từ 1 m ra 5 m), rồi thắp L1 đặt cạnh nó ở tick 3.
   const r = runHeadless({
     ticks: 5,
-    scenario: empty({ player: { carried: 6 }, lanterns: [{ id: 'L1', pos: [2, 0, 0] }], shades: [{ id: 'S1', pos: [1, 0, 0] }] }),
+    scenario: empty({ player: { carried: T.pulse_cost + 3 }, lanterns: [{ id: 'L1', pos: [2, 0, 0], deposited: T.lantern_cost - 3 }], shades: [{ id: 'S1', pos: [1, 0, 0] }] }),
     inputs: { frames: [{ tick: 0, pulse: true }, { tick: 2, interact: true }] },
   });
   assert.deepEqual(ev(r, 'lantern_lit')[0].tick, 3);
-  assert.deepEqual(snapAt(r, 2).shades[0].pos, [5, 0, 0]); // trong vùng 4 m của L1 trước khi thắp
+  assert.deepEqual(snapAt(r, 2).shades[0].pos, [1 + T.pulse_push_m, 0, 0]);
+  assert.ok(hyp(snapAt(r, 2).shades[0].pos, [2, 0, 0]) < T.safe_radius); // trong vùng của L1 trước khi thắp
   const s = snapAt(r, 3).shades[0];
   assert.equal(s.state, 'stunned');
   assert.ok(hyp(s.pos, [2, 0, 0]) >= T.safe_radius - 0.001, JSON.stringify(s.pos));
@@ -196,7 +214,7 @@ test('AC-23 đèn vừa thắp: Bóng Mực (kể cả đang choáng) trong safe
 test('AC-24 nạp: deposited không vượt lantern_cost, phần dư giữ lại; đầy thì không nhặt thêm', () => {
   const r = runHeadless({
     ticks: 2,
-    scenario: empty({ player: { carried: 5 }, motes: [[5, 0, 5]], lanterns: [{ id: 'L1', pos: [0, 0, 1], deposited: 3 }] }),
+    scenario: empty({ player: { carried: 5 }, motes: [[5, 0, 5]], lanterns: [{ id: 'L1', pos: [0, 0, 1], deposited: T.lantern_cost - 2 }] }),
     inputs: { frames: [{ tick: 0, interact: true }] },
   });
   assert.deepEqual(ev(r, 'deposit')[0].data, { lantern_id: 'L1', amount: 2, deposited: T.lantern_cost });

@@ -32,23 +32,25 @@ Chạy hoàn toàn bằng Node, không cần cửa sổ/GPU; không cần `npm c
 | W A S D / mũi tên | Di chuyển (theo hướng camera) |
 | Kéo chuột trái, Q / E | Xoay camera |
 | Space | Nhảy |
-| F | Nạp đom đóm vào đèn gần nhất (trong 2.5 m) |
-| Shift / J | Tỏa sáng: tốn 1 đom đóm, làm choáng + đẩy Bóng Mực trong 5 m |
+| F | Nạp đom đóm vào đèn gần nhất (trong 2 m) |
+| Shift / J | Tỏa sáng: tốn 3 đom đóm, làm choáng + đẩy Bóng Mực trong 5 m, hồi chiêu 3 s |
 | R | Chơi lại (bất cứ lúc nào, kể cả sau thắng/thua) |
 
 ## Luật và cách tính điểm
 
-- Mang tối đa **5** đom đóm. Mỗi đèn cần **5** đom đóm để thắp. Thắp đủ **5** đèn → **thắng**.
-- Bóng Mực đuổi theo (3 m/s, chậm hơn Mây 6 m/s). Bị chạm: mất **1 ngọn lửa**, rơi mất **một nửa** số đom đóm đang mang (làm tròn xuống), bất tử 1.5 s. Hết **3** ngọn lửa → **thua**.
-- Bóng Mực không vào được vòng **4 m** quanh đèn **đã thắp**.
+> **Phase 2 đang làm** ([docs/phases/phase-2.md](docs/phases/phase-2.md)): số liệu đã theo chuẩn TICKET-02 (contract v1.1). Các luật mới (lướt, rơi khỏi đảo, điểm khi nạp, Bóng Mực lùi sau khi chạm, 3 Đêm…) sẽ có ở các bước sau; mục này cập nhật khi xong.
+
+- Mang tối đa **10** đom đóm. Mỗi đèn cần **10** đom đóm để thắp. Thắp đủ **5** đèn → **thắng**.
+- Bóng Mực đuổi theo (4 m/s, chậm hơn Mây 6 m/s). Bị chạm: mất **1 ngọn lửa**, rơi **một nửa** số đom đóm đang mang (làm tròn xuống), bất tử 1.5 s. Hết **3** ngọn lửa → **thua**.
+- Bóng Mực không vào được vòng **6 m** quanh đèn **đã thắp**.
 - Đêm dài **300 s**; trời sáng mà chưa thắp hết đèn → **thua**.
 
 | Sự kiện | Điểm |
 |---|---|
-| Nhặt 1 đom đóm | +10 |
+| Nhặt 1 đom đóm (Phase 2: chuyển sang tính khi nạp) | +10 |
 | Thắp 1 đèn | +100 |
-| Làm choáng 1 Bóng Mực | +20 |
-| Khi thắng: mỗi giây còn lại (làm tròn xuống) | +1 |
+| Tỏa Sáng trúng 1 Bóng Mực | +5 |
+| Khi thắng: mỗi giây còn lại (làm tròn xuống) | +2 |
 | Khi thắng: mỗi ngọn lửa còn lại | +50 |
 
 ## Giả định (chỗ PRD-0 để mở)
@@ -57,11 +59,11 @@ Chạy hoàn toàn bằng Node, không cần cửa sổ/GPU; không cần `npm c
 
 | Chủ đề | Cách game xử lý |
 |---|---|
-| Nhặt đom đóm | **Tự động** khi khoảng cách XZ ≤ `pickup_radius` (1 m). Đang mang đủ 5 thì **không nhặt**, đom đóm vẫn nằm trên đất |
-| Nạp đèn | `F` nạp vào đèn **chưa thắp gần nhất** trong 2.5 m: `amount = min(carried, lantern_cost − deposited)`, **phần dư giữ lại**; `deposited` không vượt `lantern_cost` |
-| Tỏa sáng | Trừ `pulse_cost` (1) vào `carried`. Không đủ hoặc đang hồi chiêu → **không kích hoạt, không ghi event** `pulse` |
+| Nhặt đom đóm | **Tự động** khi khoảng cách XZ ≤ `pickup_radius` (1 m). Đang mang đủ 10 thì **không nhặt**, đom đóm vẫn nằm trên đất |
+| Nạp đèn | `F` nạp vào đèn **chưa thắp gần nhất** trong 2 m: `amount = min(carried, lantern_cost − deposited)`, **phần dư giữ lại**; `deposited` không vượt `lantern_cost` |
+| Tỏa sáng | Trừ `pulse_cost` (3) vào `carried`. Không đủ hoặc đang hồi chiêu → **không kích hoạt, không ghi event** `pulse` |
 | Bị chạm | `dropped = floor(carried × 0.5)`; đom đóm rơi **mất hẳn** (không thành mote mới) |
-| Điểm thưởng thắng | Cộng **ngay tại tick `game_over` (won)**: `floor(time_left_s) × 1 + flames × 50`; nằm trong snapshot tick đó và dòng `end`. **Thua không thưởng** |
+| Điểm thưởng thắng | Cộng **ngay tại tick `game_over` (won)**: `floor(time_left_s) × 2 + flames × 50`; nằm trong snapshot tick đó và dòng `end`. **Thua không thưởng** |
 | Vùng an toàn | Chỉ **đèn đã thắp**. Bóng Mực (kể cả đang choáng) ở trong vùng lúc đèn vừa thắp bị **đẩy ra mép vùng ngay tick đó**; sau đó không vào được |
 | Thứ tự dòng JSONL | Trong một tick: các event trước, snapshot (nếu tới lượt) sau; `end` luôn là dòng cuối; không có snapshot đặc biệt khi kết thúc |
 | Rơi khỏi đảo | `fall_enabled: false`: Mây bị chặn ở mép đảo (bán kính 40 m), không có event `fall` |
