@@ -17,7 +17,9 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const sh = (cmd, args, opts = {}) => spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', shell: process.platform === 'win32', ...opts });
 const git = (...a) => spawnSync('git', a, { cwd: ROOT, encoding: 'utf8' }).stdout.trim();
-const header = () => `# ${new Date().toISOString()} | node ${process.version} | ${os.type()} ${os.release()} | commit ${git('rev-parse', '--short', 'HEAD')}${git('status', '--porcelain') ? ' (+ thay đổi chưa commit)' : ''}\n`;
+// chỉ xét file đã theo dõi: bằng chứng đang sinh và file cục bộ chưa theo dõi không tính là "thay đổi"
+const header = () => `# ${new Date().toISOString()} | node ${process.version} | ${os.type()} ${os.release()} | commit ${git('rev-parse', '--short', 'HEAD')}${git('status', '--porcelain', '--untracked-files=no') ? ' (+ thay đổi chưa commit)' : ''}\n`;
+const built = (s) => (s.replace(/\x1b\[[0-9;]*m/g, '').match(/✓ built in .*/) || [''])[0];
 const write = (name, text) => { fs.writeFileSync(path.join(OUT, name), text); console.log(`→ evidence/phase-2/${name}`); };
 const sha = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex').slice(0, 16);
 const rel = (p) => path.relative(ROOT, p).replaceAll('\\', '/');
@@ -131,7 +133,7 @@ function runPerf() {
 // ---------- 5. web: build + chụp 3 Đêm bằng Chrome headless, kiểm console không có lỗi ----------
 async function runWeb() {
   const b = sh('npm', ['run', 'build']);
-  let text = `${header()}$ npm run build\nexit=${b.status}\n${(b.stdout.match(/✓ built in .*/) || [''])[0]}\n`;
+  let text = `${header()}$ npm run build\nexit=${b.status}\n${built(b.stdout)}\n`;
   const chrome = [
     'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
     '/usr/bin/google-chrome', '/usr/bin/chromium', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -184,7 +186,7 @@ function runClone() {
     text += (fs.existsSync(o) ? fs.readFileSync(o, 'utf8').trim().split('\n').at(-1) : '(không có output)') + '\n';
   }
   const b = step('npm run build', 'npm', ['run', 'build'], repo);
-  text += (b.stdout.match(/✓ built in .*/) || [''])[0] + '\n';
+  text += built(b.stdout) + '\n';
   ok &&= b.status === 0;
   write('clean-clone.txt', text);
   return ok;
