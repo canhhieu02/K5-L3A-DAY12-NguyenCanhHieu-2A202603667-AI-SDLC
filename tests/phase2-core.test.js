@@ -35,7 +35,9 @@ test('P2-12 lướt trên không giữ nguyên độ cao', () => {
   const y = snapAt(r, 9).player.pos[1];
   assert.ok(y > 0.5);
   for (let k = 10; k <= 21; k++) assert.equal(snapAt(r, k).player.pos[1], y, `tick ${k}`);
-  assert.ok(snapAt(r, 23).player.pos[1] < y);
+  // hết lướt: vận tốc dọc lúc bắt đầu lướt (đang lên 4 m/s) được trả lại (A2-3)
+  assert.ok(snapAt(r, 22).player.pos[1] > y);
+  assert.ok(snapAt(r, 22).player.vel[1] > 3.5);
 });
 
 test('P2-13 lướt khi đứng yên theo hướng đang quay mặt (đầu Đêm +Z; sau khi đi -X thì -X)', () => {

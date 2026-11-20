@@ -126,7 +126,7 @@ export function createGame({ seed = 1, night = 1, scenario = null, tuning = TUNI
       pos: map.start.slice(), vel: [0, 0, 0], grounded: true, facing: map.startFacing.slice(),
       flames: tuning.flames, carried: 0,
       invulnTicks: 0, pulseCdTicks: 0, dashCdTicks: 0, dashTicks: 0, dashDir: [0, 1], charmTicks: 0,
-      waitTicks: 0, launch: null,
+      waitTicks: 0, launch: null, heldVy: null,
     },
     lanterns: map.lanterns.map(([id, pos]) => ({ id, pos: pos.slice(), lit: false, deposited: 0 })),
     shades: [],
@@ -134,6 +134,7 @@ export function createGame({ seed = 1, night = 1, scenario = null, tuning = TUNI
     drifters: [],
     charms: [],
     wind: { active: false, dir_deg: 0 },
+    windTicks: 0,
     nextMoteId: 1,
     nextShadeId: 1,
     randomMotes: sc.random_motes ?? true,
@@ -213,6 +214,12 @@ function movePlayer(g, input, P, emit) {
   }
   const dashing = p.dashTicks > 0;
 
+  // Bục nhảy: chân Mây chạm bục (đứng trên đất, XZ <= r) thì phóng (A2-27).
+  if (p.grounded) {
+    const pd = g.map.pads.find((q) => within(p.pos, q.pos, q.r) && Math.abs(p.pos[1] - q.pos[1]) <= RULES.step_up);
+    if (pd) { p.launch = pd.h.slice(); p.vel[1] = pd.vy; p.grounded = false; }
+  }
+
   if (P.jump && p.grounded && !dashing) { p.vel[1] = RULES.jump_velocity; p.grounded = false; }
 
   // Vận tốc ngang đạt ngay giá trị đích (A2-1); trên không điều khiển đầy đủ.
@@ -232,9 +239,12 @@ function movePlayer(g, input, P, emit) {
 
   // Trục Y: lướt giữ nguyên độ cao (A2-3), còn lại trọng lực khi trên không.
   // Gia tốc hằng nên dùng vận tốc trung bình trong tick: đỉnh nhảy đúng v²/2g = 1.225 m, tiếp đất đúng 42 tick.
+  // Lướt: giữ nguyên độ cao, vận tốc dọc tạm cất lại và trả về khi hết lướt (A2-3).
   let ny = p.pos[1];
-  if (dashing) p.vel[1] = 0;
-  else if (!p.grounded) {
+  if (dashing) {
+    if (p.heldVy == null) p.heldVy = p.grounded ? 0 : p.vel[1];
+    p.vel[1] = 0;
+  } else if (!p.grounded) {
     const v0 = p.vel[1];
     p.vel[1] -= RULES.gravity * TICK_DT;
     ny += ((v0 + p.vel[1]) / 2) * TICK_DT;
@@ -264,7 +274,10 @@ function movePlayer(g, input, P, emit) {
 
   p.pos = [nx, ny, nz];
   p.vel = [vx, p.grounded ? 0 : p.vel[1], vz];
-  if (dashing) p.dashTicks--;
+  if (dashing && --p.dashTicks === 0) {
+    if (!p.grounded) p.vel[1] = p.heldVy ?? 0;
+    p.heldVy = null;
+  }
 }
 
 // ---------- Bóng Mực (bước 8) ----------
@@ -388,6 +401,12 @@ export function step(g, input = {}) {
     if (s.spawnTicks > 0 && --s.spawnTicks === 0 && s.state === 'spawning') s.state = 'wander';
   }
   g.motes = g.motes.filter((m) => m.ttl == null || --m.ttl > 0);
+  // Gió mạnh: mỗi 30 s một cơn 5 s, hướng ngẫu nhiên (A2-24)
+  if (g.windTicks > 0 && --g.windTicks === 0) g.wind = { active: false, dir_deg: 0 };
+  if (g.windEnabled && g.simTick % RULES.wind_period_ticks === 0) {
+    g.wind = { active: true, dir_deg: Math.floor(g.rng() * 360) };
+    g.windTicks = RULES.wind_duration_ticks;
+  }
   let respawned = false;
   if (p.waitTicks > 0 && --p.waitTicks === 0) {
     p.pos = g.map.start.slice();
@@ -408,6 +427,7 @@ export function step(g, input = {}) {
     p.waitTicks = RULES.respawn_wait_ticks;
     p.vel = [0, 0, 0];
     p.dashTicks = 0;
+    p.heldVy = null;
     p.launch = null;
     emit('player_hit', { by: 'fall', flames: p.flames, dropped: 0, lost });
   }

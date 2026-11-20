@@ -54,6 +54,8 @@ export const RULES = {
   respawn_wait_ticks: 60,
   charm_speed: 7.2,
   wind_speed: 2,
+  wind_period_ticks: 1800,
+  wind_duration_ticks: 300,
   // Giả định (docs/assumptions.md)
   shade_spawning_ticks: 60, // A2-10
   shade_hover: 1.0, // A2-8: tâm Bóng Mực cao hơn mặt đất 1 m

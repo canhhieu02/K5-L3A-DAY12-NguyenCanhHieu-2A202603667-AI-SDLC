@@ -22,7 +22,8 @@ Quy ước: `T.x` = khóa `tuning` trong `game.contract.json` (= `src/core/tunin
 | 1 | Xong | — |
 | 2 | Xong | P2-01; AC-09/16/17/23/24 tham số hóa theo tuning |
 | 3 | Xong (Đêm 1 chuẩn hóa luôn vì lịch sinh gắn với điểm sinh) | `tests/phase2-core.test.js`: P2-03, 04, 11–17, 19–28, 31, 40–43, 84, 90, 91; test Phase 1 cập nhật theo luật mới: AC-02 (trường v1.1), AC-08/10/12 (điểm khi nạp), AC-16 (đẩy lùi 15 tick), AC-19/20 (lịch sinh), AC-23 (đẩy ra trong 30 tick) |
-| 4–8 | Chưa | |
+| 4 | Xong | `tests/phase2-maps.test.js`: P2-03 (Đêm 2/3), 23 (4.5 m/s), 30 (lịch Đêm 2/3), 50, 52–56. Chạy 21 600 tick Đêm 2/3: ~0.35 s, hai lần chạy giống hệt từng byte |
+| 5–8 | Chưa | |
 
 ## A. Số liệu chuẩn và contract (Phần 1, Phần 4)
 
