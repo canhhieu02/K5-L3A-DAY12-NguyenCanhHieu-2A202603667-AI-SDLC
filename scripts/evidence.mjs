@@ -16,7 +16,7 @@ const SC = path.join(ROOT, 'scenarios', 'phase2');
 fs.mkdirSync(OUT, { recursive: true });
 
 const sh = (cmd, args, opts = {}) => spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', shell: process.platform === 'win32', ...opts });
-const git = (...a) => sh('git', a).stdout.trim();
+const git = (...a) => spawnSync('git', a, { cwd: ROOT, encoding: 'utf8' }).stdout.trim();
 const header = () => `# ${new Date().toISOString()} | node ${process.version} | ${os.type()} ${os.release()} | commit ${git('rev-parse', '--short', 'HEAD')}${git('status', '--porcelain') ? ' (+ thay đổi chưa commit)' : ''}\n`;
 const write = (name, text) => { fs.writeFileSync(path.join(OUT, name), text); console.log(`→ evidence/phase-2/${name}`); };
 const sha = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex').slice(0, 16);
@@ -163,10 +163,11 @@ async function runWeb() {
 function runClone() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ddl-clone-'));
   let text = `# ${new Date().toISOString()} | clone sạch tại commit ${git('rev-parse', '--short', 'HEAD')}\n`;
+  // chỉ npm cần shell trên Windows; git/node gọi trực tiếp để đường dẫn có dấu cách/tiếng Việt không bị tách
   const step = (label, cmd, args, cwd) => {
-    const r = spawnSync(cmd, args, { cwd, encoding: 'utf8', shell: process.platform === 'win32' });
-    text += `$ ${label}\nexit=${r.status}\n`;
-    return r;
+    const r = spawnSync(cmd, args, { cwd, encoding: 'utf8', shell: cmd === 'npm' && process.platform === 'win32' });
+    text += `$ ${label}\nexit=${r.status}${r.error ? ` (${r.error.message})` : ''}\n`;
+    return { ...r, stdout: r.stdout || '' };
   };
   step(`git clone <repo> ${path.basename(dir)}/repo`, 'git', ['clone', '-q', ROOT, path.join(dir, 'repo')], dir);
   const repo = path.join(dir, 'repo');
@@ -179,7 +180,8 @@ function runClone() {
     const r = step(`node src/headless/cli.js --seed 7 --night ${n} --ticks 600 --out o${n}.jsonl`, process.execPath,
       ['src/headless/cli.js', '--seed', '7', '--night', String(n), '--ticks', '600', '--out', `o${n}.jsonl`], repo);
     ok &&= r.status === 0;
-    text += fs.readFileSync(path.join(repo, `o${n}.jsonl`), 'utf8').trim().split('\n').at(-1) + '\n';
+    const o = path.join(repo, `o${n}.jsonl`);
+    text += (fs.existsSync(o) ? fs.readFileSync(o, 'utf8').trim().split('\n').at(-1) : '(không có output)') + '\n';
   }
   const b = step('npm run build', 'npm', ['run', 'build'], repo);
   text += (b.stdout.match(/✓ built in .*/) || [''])[0] + '\n';
