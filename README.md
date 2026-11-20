@@ -29,16 +29,19 @@ Chạy hoàn toàn bằng Node, không cần cửa sổ/GPU; không cần `npm c
 
 | Phím | Hành động |
 |---|---|
-| W A S D / mũi tên | Di chuyển (theo hướng camera) |
-| Kéo chuột trái, Q / E | Xoay camera |
+| W A S D | Di chuyển (theo hướng camera) |
+| Kéo chuột trái, ← → | Xoay camera (độ nhạy chỉnh trong Cài đặt) |
 | Space | Nhảy |
-| F | Nạp đom đóm vào đèn gần nhất (trong 2 m) |
-| Shift / J | Tỏa sáng: tốn 3 đom đóm, làm choáng + đẩy Bóng Mực trong 5 m, hồi chiêu 3 s |
-| R | Chơi lại (bất cứ lúc nào, kể cả sau thắng/thua) |
+| Shift | Lướt 14 m/s trong 0.2 s, hồi chiêu 1.5 s |
+| E | Nạp đom đóm vào đèn gần nhất (trong 2 m) |
+| F / J | Tỏa Sáng: tốn 3 đom đóm, làm choáng + đẩy Bóng Mực trong 5 m, hồi chiêu 3 s |
+| Esc / P | Tạm dừng: Tiếp tục / Chơi lại Đêm / Cài đặt / Về menu |
+
+Mở `http://localhost:5173/?night=2` (hoặc 3) để vào thẳng một Đêm, bỏ qua menu. Góc dưới trái hiện FPS hiện tại và trung bình (tắt trong Cài đặt).
 
 ## Luật và cách tính điểm
 
-> **Phase 2 đang làm** ([docs/phases/phase-2.md](docs/phases/phase-2.md)): luật lõi, bản đồ 3 Đêm (`--night 1|2|3` ở headless), Gió Lạc và Bùa Gió đã theo chuẩn TICKET-02 (contract v1.1). Chuỗi 3 Đêm trên web, menu/HUD/âm thanh sẽ có ở bước sau; mục này cập nhật khi xong. Phím tạm thời: **C/L** lướt, **P/Esc** tạm dừng.
+> **Phase 2 đang làm** ([docs/phases/phase-2.md](docs/phases/phase-2.md)): luật lõi, bản đồ 3 Đêm, Gió Lạc, Bùa Gió và bản web (chuỗi 3 Đêm, menu, tạm dừng, cài đặt, âm thanh, HUD) đã theo TICKET-02 (contract v1.1). Còn lại: harness agent và bằng chứng.
 
 - Mang tối đa **10** đom đóm. Mỗi đèn cần **10** đom đóm để thắp. Thắp đủ **5** đèn → **thắng**.
 - Bóng Mực xuất hiện từ giây thứ 5, đi lang thang và đuổi khi Mây trong 12 m (4 m/s). Bị chạm: mất **1 ngọn lửa**, **một nửa** số đom đóm đang mang rơi ra quanh Mây (nhặt lại được trong 8 s), bất tử 1.5 s; Bóng Mực lùi lại 2 m. Hết **3** ngọn lửa → **thua**.
