@@ -100,6 +100,67 @@ function spawnShade(g) {
   return s;
 }
 
+// ---------- Gió Lạc ----------
+export const DRIFTER_STATES = ['idle', 'chase', 'flee', 'removed'];
+function makeDrifter(g, { id, pos, state = 'idle', stolen = 0, ticks }) {
+  const d = { id, pos: pos.slice(), state, stolen, hasStolen: stolen > 0, fleeTicks: 0, wanderDir: [1, 0], wanderTicks: 0 };
+  if (state === 'flee') d.fleeTicks = ticks ?? RULES.drifter_flee_ticks;
+  return d;
+}
+function spawnDrifter(g) {
+  const pts = g.map.shadeSpawns; // "điểm sương" = điểm sinh Bóng Mực (A2-18)
+  const pt = pts[Math.floor(g.rng() * pts.length)];
+  const ground = g.map.groundAt(pt[0], pt[2]) ?? 0;
+  const d = makeDrifter(g, { id: `D${g.nextDrifterId++}`, pos: [pt[0], ground + RULES.drifter_hover, pt[2]] });
+  g.drifters.push(d);
+  return d;
+}
+function moveDrifters(g) {
+  const p = g.player;
+  const present = p.waitTicks === 0;
+  for (const d of g.drifters) {
+    if (d.state === 'removed') continue;
+    const dist = distXZ(d.pos, p.pos);
+    if (d.state === 'idle' || d.state === 'chase') {
+      const want = present && !d.hasStolen && p.carried >= RULES.drifter_min_carry && dist <= RULES.drifter_detect + EPS;
+      d.state = want ? 'chase' : 'idle';
+    }
+    if (d.state === 'chase') {
+      const stepLen = RULES.drifter_speed * TICK_DT;
+      if (dist <= stepLen) { d.pos[0] = p.pos[0]; d.pos[2] = p.pos[2]; }
+      else { d.pos[0] += ((p.pos[0] - d.pos[0]) / dist) * stepLen; d.pos[2] += ((p.pos[2] - d.pos[2]) / dist) * stepLen; }
+    } else if (d.state === 'flee') {
+      const [dx, dz] = dirXZ(p.pos, d.pos); // bay ra xa Mây, được bay ra ngoài biển mây
+      d.pos[0] += dx * RULES.drifter_speed * TICK_DT;
+      d.pos[2] += dz * RULES.drifter_speed * TICK_DT;
+    } else {
+      if (d.wanderTicks <= 0) {
+        const a = g.rng() * 2 * Math.PI;
+        d.wanderDir = [Math.cos(a), Math.sin(a)];
+        d.wanderTicks = RULES.wander_turn_ticks;
+      }
+      d.wanderTicks--;
+      const stepLen = RULES.drifter_idle_speed * TICK_DT;
+      const nx = d.pos[0] + d.wanderDir[0] * stepLen;
+      const nz = d.pos[2] + d.wanderDir[1] * stepLen;
+      if (g.map.groundAt(nx, nz) != null) { d.pos[0] = nx; d.pos[2] = nz; }
+      else d.wanderDir = [-d.wanderDir[0], -d.wanderDir[1]];
+    }
+    d.pos[1] = (g.map.groundAt(d.pos[0], d.pos[2]) ?? 0) + RULES.drifter_hover;
+  }
+}
+
+// ---------- Bùa Gió ----------
+function makeCharms(map, list) {
+  if (!list) return map.charms.map(([id, pos]) => ({ id, pos: pos.slice(), available: true, respawnTicks: 0 }));
+  return list.map((c) => {
+    const def = map.charms.find(([id]) => id === c.id);
+    if (!c.pos && !def) throw Object.assign(new Error(`scenario.charms: bùa ${c.id} không có ở Đêm ${map.night}, cần pos`), { scenario: true });
+    const respawnTicks = c.respawn_ticks ?? 0;
+    return { id: c.id, pos: (c.pos ?? def[1]).slice(), available: c.available ?? respawnTicks === 0, respawnTicks };
+  });
+}
+
 function inLitZone(g, pos) {
   return g.lanterns.some((L) => L.lit && distXZ(pos, L.pos) < g.t.safe_radius);
 }
@@ -137,6 +198,7 @@ export function createGame({ seed = 1, night = 1, scenario = null, tuning = TUNI
     windTicks: 0,
     nextMoteId: 1,
     nextShadeId: 1,
+    nextDrifterId: 1,
     randomMotes: sc.random_motes ?? true,
     randomShades: sc.random_shades ?? true,
     randomDrifters: sc.random_drifters ?? map.drifters,
@@ -183,6 +245,16 @@ export function createGame({ seed = 1, night = 1, scenario = null, tuning = TUNI
       if (m) g.nextShadeId = Math.max(g.nextShadeId, Number(m[1]) + 1); // tránh trùng id tự sinh
     }
   }
+
+  // drifters, charms trong scenario thay thế danh sách mặc định (contract v1.1)
+  for (const d of sc.drifters || []) {
+    g.drifters.push(makeDrifter(g, { id: d.id ?? `D${g.nextDrifterId++}`, pos: d.pos, state: d.state, stolen: d.stolen, ticks: d.state_ticks_left }));
+  }
+  for (const d of g.drifters) {
+    const m = /^D(\d+)$/.exec(d.id);
+    if (m) g.nextDrifterId = Math.max(g.nextDrifterId, Number(m[1]) + 1);
+  }
+  g.charms = makeCharms(map, sc.charms);
   return g;
 }
 
@@ -401,6 +473,12 @@ export function step(g, input = {}) {
     if (s.spawnTicks > 0 && --s.spawnTicks === 0 && s.state === 'spawning') s.state = 'wander';
   }
   g.motes = g.motes.filter((m) => m.ttl == null || --m.ttl > 0);
+  for (const d of g.drifters) {
+    if (d.state === 'flee' && --d.fleeTicks <= 0) d.state = 'removed'; // biến mất cùng số đã cướp
+  }
+  for (const c of g.charms) {
+    if (c.respawnTicks > 0 && --c.respawnTicks === 0) c.available = true;
+  }
   // Gió mạnh: mỗi 30 s một cơn 5 s, hướng ngẫu nhiên (A2-24)
   if (g.windTicks > 0 && --g.windTicks === 0) g.wind = { active: false, dir_deg: 0 };
   if (g.windEnabled && g.simTick % RULES.wind_period_ticks === 0) {
@@ -442,6 +520,15 @@ export function step(g, input = {}) {
         p.carried++;
         emit('mote_picked', { carried: p.carried });
       } else i++;
+    }
+    // Bùa Gió: nhặt theo luật như đom đóm; nhặt lại thì làm mới hiệu lực
+    for (const c of g.charms) {
+      if (c.available && within(p.pos, c.pos, t.pickup_radius) && Math.abs(p.pos[1] - c.pos[1]) <= RULES.pickup_height + EPS) {
+        c.available = false;
+        c.respawnTicks = RULES.charm_respawn_ticks;
+        p.charmTicks = RULES.charm_ticks;
+        emit('charm_picked', { charm_id: c.id, charm_ticks: p.charmTicks });
+      }
     }
   }
 
@@ -505,12 +592,44 @@ export function step(g, input = {}) {
       ids.push(s.id);
     }
     emit('pulse', { stunned_ids: ids });
+    // Gió Lạc: chase → flee không cướp; flee đang mang đồ → thả lại tại chỗ, biến mất sau 120 tick (A2-21, A2-22)
+    const drops = [];
+    for (const d of [...g.drifters].sort(idCmp)) {
+      if (dist3(c, d.pos) > t.pulse_radius + EPS) continue;
+      if (d.state === 'chase') {
+        d.state = 'flee';
+        d.fleeTicks = RULES.drifter_flee_ticks;
+      } else if (d.state === 'flee' && d.stolen > 0) {
+        const amount = d.stolen;
+        const ground = g.map.groundAt(d.pos[0], d.pos[2]);
+        if (ground != null) for (let i = 0; i < amount; i++) addMote(g, [d.pos[0], ground, d.pos[2]], 'dropped');
+        d.stolen = 0;
+        d.fleeTicks = RULES.drifter_vanish_ticks;
+        drops.push({ drifter_id: d.id, amount });
+      }
+    }
+    for (const data of drops) emit('drifter_drop', data);
   }
 
-  // 8. Di chuyển Bóng Mực (Gió Lạc: bước 5)
+  // 8. Di chuyển Bóng Mực và Gió Lạc
   moveShades(g);
+  moveDrifters(g);
 
-  // 9. Chạm: tối đa 1 lần mất Ngọn Lửa mỗi tick, xét theo id tăng dần
+  // 9. Chạm: Gió Lạc cướp trước (không cần Mây hết bất tử), rồi Bóng Mực
+  if (present) {
+    for (const d of [...g.drifters].sort(idCmp)) {
+      if (d.state !== 'chase' || d.hasStolen || !within(d.pos, p.pos, RULES.drifter_steal_radius)) continue;
+      const amount = Math.min(RULES.drifter_steal_max, p.carried);
+      if (amount <= 0) continue;
+      p.carried -= amount;
+      d.stolen = amount;
+      d.hasStolen = true;
+      d.state = 'flee';
+      d.fleeTicks = RULES.drifter_flee_ticks;
+      emit('drifter_steal', { drifter_id: d.id, amount, carried: p.carried });
+    }
+  }
+  // Bóng Mực: tối đa 1 lần mất Ngọn Lửa mỗi tick, xét theo id tăng dần
   if (present && p.invulnTicks === 0) {
     const hitter = [...g.shades].sort(idCmp).find((s) =>
       (s.state === 'chase' || s.state === 'wander') && s.pushTicks === 0 &&
@@ -540,6 +659,8 @@ export function step(g, input = {}) {
       if (s) emit('shade_spawned', { id: s.id });
     }
   }
+  if (g.randomDrifters && st % RULES.drifter_spawn_ticks === 0 &&
+      g.drifters.filter((d) => d.state !== 'removed').length < RULES.drifter_max) spawnDrifter(g);
 
   // 11. Thắng/thua: hết Ngọn Lửa luôn thua; còn sống + đủ đèn thì thắng; hết giờ thì thua
   if (p.flames <= 0) return finish('lost', 'no_flames');

@@ -1,6 +1,6 @@
 // Kiểm tra định dạng file inputs/scenario (Test Contract v1.0 mục C, D + v1.1).
 // Trả về chuỗi lỗi, hoặc null nếu hợp lệ.
-import { SHADE_STATES } from './world.js';
+import { SHADE_STATES, DRIFTER_STATES } from './world.js';
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -62,6 +62,25 @@ export function validateScenario(doc) {
   }
   for (const k of ['drifters', 'charms']) {
     if (k in doc && (!Array.isArray(doc[k]) || !doc[k].every(isObj))) return `scenario.${k}: phải là mảng object`;
+  }
+  const ids = new Set();
+  for (const [i, d] of (doc.drifters || []).entries()) {
+    const at = `scenario.drifters[${i}]`;
+    if (!isVec3(d.pos)) return `${at}.pos: phải là [x, y, z]`;
+    if ('id' in d && (typeof d.id !== 'string' || ids.has(d.id))) return `${at}.id: chuỗi, không trùng`;
+    ids.add(d.id);
+    if ('state' in d && !DRIFTER_STATES.includes(d.state)) return `${at}.state: một trong ${DRIFTER_STATES.join(', ')}`;
+    if ('stolen' in d && !isNat(d.stolen)) return `${at}.stolen: số nguyên >= 0`;
+    if ('state_ticks_left' in d && !isNat(d.state_ticks_left)) return `${at}.state_ticks_left: số nguyên >= 0`;
+  }
+  ids.clear();
+  for (const [i, c] of (doc.charms || []).entries()) {
+    const at = `scenario.charms[${i}]`;
+    if (typeof c.id !== 'string' || ids.has(c.id)) return `${at}.id: bắt buộc, chuỗi, không trùng`;
+    ids.add(c.id);
+    if ('pos' in c && !isVec3(c.pos)) return `${at}.pos: phải là [x, y, z]`;
+    if ('available' in c && typeof c.available !== 'boolean') return `${at}.available: phải là boolean`;
+    if ('respawn_ticks' in c && !isNat(c.respawn_ticks)) return `${at}.respawn_ticks: số nguyên >= 0`;
   }
   if ('lanterns' in doc) {
     if (!Array.isArray(doc.lanterns)) return 'scenario.lanterns: phải là mảng';

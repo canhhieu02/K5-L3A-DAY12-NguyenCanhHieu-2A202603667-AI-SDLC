@@ -6,7 +6,7 @@ import { TUNING as T } from '../src/core/tuning.js';
 
 const hyp = (p, q) => Math.hypot(p[0] - q[0], p[2] - q[2]);
 const deg = (d) => (d * Math.PI) / 180;
-const quiet = (extra = {}) => empty({ wind_enabled: false, ...extra });
+const quiet = (extra = {}) => empty({ wind_enabled: false, random_drifters: false, drifters: [], charms: [], ...extra });
 const lanternsOf = (r) => r.snaps[0].lanterns.map((L) => [L.id, L.pos]);
 const landing = (r, after = 1) => r.snaps.find((s) => s.tick > after && s.player.grounded);
 

@@ -38,7 +38,7 @@ Chạy hoàn toàn bằng Node, không cần cửa sổ/GPU; không cần `npm c
 
 ## Luật và cách tính điểm
 
-> **Phase 2 đang làm** ([docs/phases/phase-2.md](docs/phases/phase-2.md)): luật lõi và bản đồ 3 Đêm (`--night 1|2|3` ở headless) đã theo chuẩn TICKET-02 (contract v1.1). Gió Lạc, Bùa Gió, chuỗi 3 Đêm trên web, menu/HUD/âm thanh sẽ có ở các bước sau; mục này cập nhật khi xong. Phím tạm thời: **C/L** lướt, **P/Esc** tạm dừng.
+> **Phase 2 đang làm** ([docs/phases/phase-2.md](docs/phases/phase-2.md)): luật lõi, bản đồ 3 Đêm (`--night 1|2|3` ở headless), Gió Lạc và Bùa Gió đã theo chuẩn TICKET-02 (contract v1.1). Chuỗi 3 Đêm trên web, menu/HUD/âm thanh sẽ có ở bước sau; mục này cập nhật khi xong. Phím tạm thời: **C/L** lướt, **P/Esc** tạm dừng.
 
 - Mang tối đa **10** đom đóm. Mỗi đèn cần **10** đom đóm để thắp. Thắp đủ **5** đèn → **thắng**.
 - Bóng Mực xuất hiện từ giây thứ 5, đi lang thang và đuổi khi Mây trong 12 m (4 m/s). Bị chạm: mất **1 ngọn lửa**, **một nửa** số đom đóm đang mang rơi ra quanh Mây (nhặt lại được trong 8 s), bất tử 1.5 s; Bóng Mực lùi lại 2 m. Hết **3** ngọn lửa → **thua**.

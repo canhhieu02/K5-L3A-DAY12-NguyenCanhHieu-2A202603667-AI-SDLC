@@ -51,7 +51,11 @@ export function run(argv) {
   const o = parseArgs(argv);
   const scenario = o.scenario ? readJson(o.scenario, validateScenario) : null;
   const inputs = o.inputs ? readJson(o.inputs, validateInputs) : { frames: [] };
-  const g = createGame({ seed: o.seed, night: o.night, scenario });
+  let g;
+  try { g = createGame({ seed: o.seed, night: o.night, scenario }); } catch (e) {
+    if (e.scenario) throw new CliError(`${o.scenario}: ${e.message}`, 2);
+    throw e;
+  }
   for (const L of scenario?.lanterns || []) {
     if (!g.lanterns.some((x) => x.id === L.id)) process.stderr.write(`cảnh báo: bỏ qua đèn không tồn tại ${L.id}\n`);
   }

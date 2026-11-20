@@ -56,6 +56,21 @@ export const RULES = {
   wind_speed: 2,
   wind_period_ticks: 1800,
   wind_duration_ticks: 300,
+  // Gió Lạc
+  drifter_speed: 7,
+  drifter_idle_speed: 2,
+  drifter_max: 2,
+  drifter_spawn_ticks: 1200,
+  drifter_detect: 15,
+  drifter_min_carry: 5,
+  drifter_steal_radius: 1.2,
+  drifter_steal_max: 3,
+  drifter_flee_ticks: 240,
+  drifter_vanish_ticks: 120,
+  drifter_hover: 1.5, // A2-18
+  // Bùa Gió
+  charm_ticks: 600,
+  charm_respawn_ticks: 2700,
   // Giả định (docs/assumptions.md)
   shade_spawning_ticks: 60, // A2-10
   shade_hover: 1.0, // A2-8: tâm Bóng Mực cao hơn mặt đất 1 m
