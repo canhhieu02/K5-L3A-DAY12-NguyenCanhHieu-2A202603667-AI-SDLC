@@ -29,7 +29,22 @@ Mã AC khớp tên test trong [tests/contract.test.js](../../tests/contract.test
 | AC-19 | Chạy 2 lần cùng seed/inputs | Output giống hệt từng byte; khác seed thì khác | test |
 | AC-20 | Game mặc định 30 s | `shade_spawned` với id `S3` | test |
 | AC-21 | File sai định dạng | Mã thoát 2 + stderr; thiếu tham số → mã khác 0 | test |
+| AC-23 | Đèn vừa thắp cạnh Bóng Mực đang choáng | Bóng Mực bị đẩy ra ngoài `safe_radius` ngay tick đó | test |
+| AC-24 | Nạp khi đèn đã có 3/5; mang đủ mà đi qua đom đóm | `amount` 2, giữ dư 3; không nhặt khi đầy | test |
+| AC-25 | Thắng ở tick là bội của `--snapshot-every` | Event trước snapshot, `end` cuối; điểm snapshot = điểm end | test |
 | AC-22 | Chơi bản web | Đi, nhảy, camera 3D, nhặt, nạp, tỏa sáng, thắng/thua, HUD, chơi lại (R) | ảnh/clip |
+
+## Hỏi đáp với giảng viên (CP1)
+
+| # | Câu hỏi | GV trả lời | Đối chiếu code |
+|---|---|---|---|
+| 1 | Nhặt tự động? Đầy thì sao? | Tự chọn; carried ≤ capacity; 1 event/lần nhặt | Khớp (A1-18, AC-08/09/24) |
+| 2 | Nạp bao nhiêu? | deposited ≤ cost; amount = số thực chuyển; phổ biến `min(...)` giữ dư | Khớp (A1-12, AC-10/11/24) |
+| 3 | Pulse tốn gì? | Trừ carried hợp lý; không đủ → không kích hoạt, không event | Khớp (A1-1, AC-17) |
+| 4 | dropped làm tròn? | Tự chọn, nhất quán; dropped ≤ carried | Khớp: floor, mất hẳn (A1-3, AC-13) |
+| 5 | Thứ tự dòng? | Event trước snapshot cùng tick; end cuối; không snapshot đặc biệt | Khớp (A1-19, AC-25 thêm mới) |
+| 6 | Thưởng thắng? | Cộng tại tick game_over won, nằm trong end; thua tùy chọn | Khớp (A1-6, AC-12/25) |
+| 7 | safe_radius? | Thường chỉ đèn đã thắp; sau đó **không được để bóng trong vùng** | **Lệch**: bóng đang choáng không bị đẩy ra → viết AC-23 (đỏ) → sửa core → xanh |
 
 ## Kế hoạch đã duyệt
 1. Core sim thuần, tất định (`src/core/world.js`) theo mô hình tick của contract.
@@ -38,7 +53,7 @@ Mã AC khớp tên test trong [tests/contract.test.js](../../tests/contract.test
 4. Web Three.js chỉ đọc state từ core.
 
 ## Đánh giá cuối phase
-- **Đạt (có bằng chứng):** AC-01…AC-21 (`npm test` 21/21), scenario nhặt-nạp-thắp khớp kỳ vọng, tất định, clone sạch.
+- **Đạt (có bằng chứng):** AC-01…AC-25 trừ AC-22 (`npm test` 24/24), scenario nhặt-nạp-thắp khớp kỳ vọng, tất định, clone sạch.
 - **Chưa kiểm chứng:** AC-22 chơi web trọn ván (cần ảnh/clip); chưa chạy trực tiếp trên macOS/Linux.
 - **Rủi ro với test ẩn:** các giả định A1-1 (tỏa sáng tốn đom đóm), A1-4 (chỉ đèn đã thắp có safe_radius), A1-6 (thưởng cuối trận chỉ khi thắng), A1-14 (thứ tự xử lý) có thể khác cách hiểu của người chấm.
 - **Lỗi AI và cách xử lý:** xem [docs/ai-log.md](../ai-log.md) (sai số số thực, code web vụng).

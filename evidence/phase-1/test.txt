@@ -1,4 +1,4 @@
-# 2026-11-20T16:08:13+07:00 | node v22.16.0 | MINGW64_NT-10.0-26200
+# 2026-11-20T16:21:21+07:00 | node v22.16.0 | MINGW64_NT-10.0-26200
 $ npm test
 
 > dao-den-long@0.0.1 test
@@ -41,19 +41,25 @@ ok 16 - AC-16 tỏa sáng: tốn pulse_cost, choáng + đẩy Bóng Mực trong 
 ok 17 - AC-17 tỏa sáng cần đủ ánh sáng và có hồi chiêu
 # Subtest: AC-18 Bóng Mực không vào safe_radius của đèn đã thắp
 ok 18 - AC-18 Bóng Mực không vào safe_radius của đèn đã thắp
+# Subtest: AC-23 đèn vừa thắp: Bóng Mực (kể cả đang choáng) trong safe_radius bị đẩy ra ngay tick đó
+ok 19 - AC-23 đèn vừa thắp: Bóng Mực (kể cả đang choáng) trong safe_radius bị đẩy ra ngay tick đó
+# Subtest: AC-24 nạp: deposited không vượt lantern_cost, phần dư giữ lại; đầy thì không nhặt thêm
+ok 20 - AC-24 nạp: deposited không vượt lantern_cost, phần dư giữ lại; đầy thì không nhặt thêm
+# Subtest: AC-25 cùng tick: event đứng trước snapshot; end là dòng cuối; thưởng thắng nằm trong snapshot + end
+ok 21 - AC-25 cùng tick: event đứng trước snapshot; end là dòng cuối; thưởng thắng nằm trong snapshot + end
 # Subtest: AC-19 tất định: cùng seed/scenario/inputs -> output giống hệt; khác seed -> khác
-ok 19 - AC-19 tất định: cùng seed/scenario/inputs -> output giống hệt; khác seed -> khác
+ok 22 - AC-19 tất định: cùng seed/scenario/inputs -> output giống hệt; khác seed -> khác
 # Subtest: AC-20 game mặc định sinh thêm Bóng Mực theo thời gian (shade_spawned)
-ok 20 - AC-20 game mặc định sinh thêm Bóng Mực theo thời gian (shade_spawned)
+ok 23 - AC-20 game mặc định sinh thêm Bóng Mực theo thời gian (shade_spawned)
 # Subtest: AC-21 lỗi định dạng inputs/scenario -> mã thoát 2; thiếu tham số -> khác 0
-ok 21 - AC-21 lỗi định dạng inputs/scenario -> mã thoát 2; thiếu tham số -> khác 0
-1..21
-# tests 21
+ok 24 - AC-21 lỗi định dạng inputs/scenario -> mã thoát 2; thiếu tham số -> khác 0
+1..24
+# tests 24
 # suites 0
-# pass 21
+# pass 24
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 2297.2233
+# duration_ms 2863.3548
 exit=0

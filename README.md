@@ -51,7 +51,21 @@ Chạy hoàn toàn bằng Node, không cần cửa sổ/GPU; không cần `npm c
 | Khi thắng: mỗi giây còn lại (làm tròn xuống) | +1 |
 | Khi thắng: mỗi ngọn lửa còn lại | +50 |
 
-Các giả định đầy đủ: [docs/assumptions.md](docs/assumptions.md). `fall_enabled: false`: Mây bị chặn ở mép đảo nên không thể rơi.
+## Giả định (chỗ PRD-0 để mở)
+
+Đầy đủ 17 giả định kèm test kiểm chứng: [docs/assumptions.md](docs/assumptions.md). Các điểm chính:
+
+| Chủ đề | Cách game xử lý |
+|---|---|
+| Nhặt đom đóm | **Tự động** khi khoảng cách XZ ≤ `pickup_radius` (1 m). Đang mang đủ 5 thì **không nhặt**, đom đóm vẫn nằm trên đất |
+| Nạp đèn | `F` nạp vào đèn **chưa thắp gần nhất** trong 2.5 m: `amount = min(carried, lantern_cost − deposited)`, **phần dư giữ lại**; `deposited` không vượt `lantern_cost` |
+| Tỏa sáng | Trừ `pulse_cost` (1) vào `carried`. Không đủ hoặc đang hồi chiêu → **không kích hoạt, không ghi event** `pulse` |
+| Bị chạm | `dropped = floor(carried × 0.5)`; đom đóm rơi **mất hẳn** (không thành mote mới) |
+| Điểm thưởng thắng | Cộng **ngay tại tick `game_over` (won)**: `floor(time_left_s) × 1 + flames × 50`; nằm trong snapshot tick đó và dòng `end`. **Thua không thưởng** |
+| Vùng an toàn | Chỉ **đèn đã thắp**. Bóng Mực (kể cả đang choáng) ở trong vùng lúc đèn vừa thắp bị **đẩy ra mép vùng ngay tick đó**; sau đó không vào được |
+| Thứ tự dòng JSONL | Trong một tick: các event trước, snapshot (nếu tới lượt) sau; `end` luôn là dòng cuối; không có snapshot đặc biệt khi kết thúc |
+| Rơi khỏi đảo | `fall_enabled: false`: Mây bị chặn ở mép đảo (bán kính 40 m), không có event `fall` |
+| Nhảy | Chỉ đổi độ cao Y; khoảng cách gameplay đo trên XZ nên nhảy không né được Bóng Mực |
 
 ## Sáng tạo của tôi
 
@@ -74,7 +88,7 @@ _(Phase 1 tập trung phần lõi; chưa có phần sáng tạo ngoài phong cá
 | `src/core/` | Logic game thuần, tất định (dùng chung web + headless); `tuning.js` là nguồn số liệu |
 | `src/headless/cli.js` | CLI theo Test Contract |
 | `src/web/` | Hiển thị 3D bằng Three.js |
-| `tests/` | Test AC-01…AC-21, gọi CLI thật |
+| `tests/` | Test AC-01…AC-25, gọi CLI thật |
 | `scenarios/` | Scenario/inputs mẫu |
 
 ## Giấy phép

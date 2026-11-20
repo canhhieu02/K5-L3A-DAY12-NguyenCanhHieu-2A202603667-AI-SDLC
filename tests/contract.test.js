@@ -179,6 +179,46 @@ test('AC-18 Bóng Mực không vào safe_radius của đèn đã thắp', () => 
   assert.equal(ev(r, 'player_hit').length, 0);
 });
 
+test('AC-23 đèn vừa thắp: Bóng Mực (kể cả đang choáng) trong safe_radius bị đẩy ra ngay tick đó', () => {
+  // Choáng S1 ở tick 1 (đẩy từ 1 m ra 5 m), rồi thắp L1 đặt cạnh nó ở tick 3.
+  const r = runHeadless({
+    ticks: 5,
+    scenario: empty({ player: { carried: 6 }, lanterns: [{ id: 'L1', pos: [2, 0, 0] }], shades: [{ id: 'S1', pos: [1, 0, 0] }] }),
+    inputs: { frames: [{ tick: 0, pulse: true }, { tick: 2, interact: true }] },
+  });
+  assert.deepEqual(ev(r, 'lantern_lit')[0].tick, 3);
+  assert.deepEqual(snapAt(r, 2).shades[0].pos, [5, 0, 0]); // trong vùng 4 m của L1 trước khi thắp
+  const s = snapAt(r, 3).shades[0];
+  assert.equal(s.state, 'stunned');
+  assert.ok(hyp(s.pos, [2, 0, 0]) >= T.safe_radius - 0.001, JSON.stringify(s.pos));
+});
+
+test('AC-24 nạp: deposited không vượt lantern_cost, phần dư giữ lại; đầy thì không nhặt thêm', () => {
+  const r = runHeadless({
+    ticks: 2,
+    scenario: empty({ player: { carried: 5 }, motes: [[5, 0, 5]], lanterns: [{ id: 'L1', pos: [0, 0, 1], deposited: 3 }] }),
+    inputs: { frames: [{ tick: 0, interact: true }] },
+  });
+  assert.deepEqual(ev(r, 'deposit')[0].data, { lantern_id: 'L1', amount: 2, deposited: T.lantern_cost });
+  assert.equal(snapAt(r, 1).player.carried, 3);
+  const full = runHeadless({ ticks: 1, scenario: empty({ player: { carried: T.carry_capacity }, motes: [[0, 0, 0]] }) });
+  assert.equal(ev(full, 'mote_picked').length, 0);
+  assert.equal(snapAt(full, 1).motes_active, 1);
+});
+
+test('AC-25 cùng tick: event đứng trước snapshot; end là dòng cuối; thưởng thắng nằm trong snapshot + end', () => {
+  const lit = ['L2', 'L3', 'L4', 'L5'].map((id) => ({ id, lit: true }));
+  const r = runHeadless({
+    ticks: 30, every: 10,
+    scenario: empty({ player: { carried: T.lantern_cost }, lanterns: [{ id: 'L1', pos: [0, 0, 2] }, ...lit] }),
+    inputs: { frames: [{ tick: 9, interact: true }] },
+  });
+  const types = r.lines.map((l) => `${l.type}:${l.tick ?? ''}`);
+  assert.deepEqual(types.slice(-5), ['event:10', 'event:10', 'event:10', 'snapshot:10', 'end:']);
+  assert.equal(snapAt(r, 10).score, r.end.score);
+  assert.equal(snapAt(r, 10).state, 'won');
+});
+
 test('AC-19 tất định: cùng seed/scenario/inputs -> output giống hệt; khác seed -> khác', () => {
   const inputs = { frames: [{ tick: 0, move: [0.3, 1] }, { tick: 200, move: [-1, 0], pulse: true }, { tick: 201, pulse: false }] };
   const a = runHeadless({ seed: 42, ticks: 3000, every: 10, inputs });

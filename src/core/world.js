@@ -237,7 +237,7 @@ export function step(g, input = {}) {
 
   // 8. Bóng Mực đuổi theo, không vào safe_radius của đèn đã thắp
   for (const s of g.shades) {
-    if (s.state === 'stunned') continue;
+    if (s.state === 'stunned') { keepOutOfLitLanterns(g, s); continue; } // đèn vừa thắp cạnh bóng đang choáng
     const d = distXZ(s.pos, p.pos);
     const stepLen = t.shade_speed * TICK_DT;
     if (d <= stepLen) { s.pos[0] = p.pos[0]; s.pos[2] = p.pos[2]; }
