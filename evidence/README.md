@@ -18,7 +18,10 @@ Sinh bằng `node scripts/evidence.mjs` tại commit ghi ở dòng đầu mỗi 
 | Bảng màu dễ phân biệt: viền/mắt Bóng Mực `#00B3FF`, cảnh báo trắng kèm ⚠ | Chrome headless `?…&cb=1`; test P3-60 so mã màu | [phase-3/web-fuel-demo-colorblind.png](phase-3/web-fuel-demo-colorblind.png) | Đạt |
 | Build + khởi động 3 Đêm không lỗi console | `npm run build`, Chrome headless menu + `?night=1/2/3` | [menu](phase-3/web-menu.png), [Đêm 1](phase-3/web-night1.png), [Đêm 2](phase-3/web-night2.png), [Đêm 3](phase-3/web-night3.png) | Đạt |
 | Clone sạch | clone HEAD → `npm ci` → `npm test` → headless 3 Đêm → build | [phase-3/clean-clone.txt](phase-3/clean-clone.txt) | Đạt |
-| Chơi tay: đèn tắt khi cạn dầu rồi thắp lại, châm dầu, Bóng Mực hút đèn, thắng + thua ở bình minh, cài đặt mù màu còn sau khi mở lại, FPS ≥ 30 | Người học chơi `npm run dev` | — | **Chưa kiểm chứng** (chờ người học) |
+| Chơi tay: đèn cạn dầu tắt (xẹp + rách, HUD "Đèn 0/5", nhắc "Thắp lại (0/5)") → thắp lại 5 đom đóm (+65, sức chứa 12) → châm dầu 2 đom đóm (+10) | Người học chơi `npm run dev`, cảnh dựng sẵn `?night=1&demo=out` (đèn L1 còn 4 dầu) | [đèn tắt](phase-3/play-lantern-out.png), [thắp lại](phase-3/play-relight.png), [châm dầu](phase-3/play-refuel.png) | Đạt (điểm trên ảnh khớp tính tay: 25 + 40 = 65; 65 + 2 × 5 = 75) |
+| Chơi tay: thắng ở bình minh, điểm bình minh | `?night=1&demo=win`: **Đêm rút còn 12 s**, 3/5 đèn sáng (dầu 60/100/35) | [thắng bình minh](phase-3/play-dawn-win.png): "Đêm 1 đã sáng!", 459 điểm | Đạt: 3 × 50 + (48 + 88 + 23) + 3 × 50 = 459; đèn còn 23 dầu (< 30) vẫn tính là sáng (A3-12). Không phải một Đêm 240 s chơi trọn |
+| FPS ≥ 30 | Đọc "FPS · TB" trên các ảnh chơi tay | 4 ảnh trên: TB 99.7–106.1 | Đạt — cửa sổ 2133×1012 (lớn hơn 1280×720) |
+| Chơi tay: thua ở bình minh, Bóng Mực hút + đèn nhấp nháy, bảng màu dễ phân biệt khi chơi + còn sau khi mở lại | `?night=1&demo=lose`, `?night=1&demo=fuel`, Cài đặt | — | **Chưa kiểm chứng** (chờ ảnh của người học; ảnh Chrome headless ở trên đã có cảnh hút + bảng màu) |
 
 ## Phase 2 (TICKET-02, Test Contract v1.1)
 
