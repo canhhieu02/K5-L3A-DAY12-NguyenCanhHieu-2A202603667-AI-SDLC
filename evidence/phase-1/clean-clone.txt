@@ -1,12 +1,12 @@
-# 2026-11-20T16:08:35+07:00 | clone sạch tại commit b502e2e
+# 2026-11-20T16:22:48+07:00 | clone sạch tại commit 3e9d981
 $ npm ci
-added 12 packages, and audited 13 packages in 7s
+added 12 packages, and audited 13 packages in 4s
 $ npm test
-# tests 21
-# pass 21
+# tests 24
+# pass 24
 # fail 0
 $ node src/headless/cli.js --seed 7 --night 1 --ticks 300 --out o.jsonl
 exit=0
 {"type":"end","ticks":300,"state":"playing","score":0}
 $ npm run build
-✓ built in 1.35s
+✓ built in 1.29s
