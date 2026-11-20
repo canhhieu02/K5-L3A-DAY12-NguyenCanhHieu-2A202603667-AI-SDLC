@@ -176,7 +176,7 @@ test('P2-26 rơi khỏi đảo: 1 player_hit fall (lost), mất hết đom đóm
   assert.equal(falls.length, 1);
   assert.deepEqual(falls[0].data, { by: 'fall', flames: T.flames - 1, dropped: 0, lost: 5 });
   const f = falls[0].tick;
-  assert.ok(snapAt(r, f).player.pos[1] <= -10 && snapAt(r, f - 1).player.pos[1] > -10); // làm tròn 3 chữ số
+  assert.ok(snapAt(r, f).player.pos[1] < -10 && snapAt(r, f - 1).player.pos[1] >= -10); // Y < −10 (A1-15)
   assert.equal(snapAt(r, f).player.carried, 0);
   assert.notDeepEqual(snapAt(r, f + 59).player.pos, [0, 0, 0]);
   const s = snapAt(r, f + 60).player;

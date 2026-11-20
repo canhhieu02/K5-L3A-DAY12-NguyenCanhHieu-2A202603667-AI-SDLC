@@ -1,0 +1,7 @@
+{ "night": 2, "ticks": 200, "about": "Gió Lạc cách 10 m đuổi 7 m/s, tới 1.2 m ở tick 76 → cướp 3 (còn 5), chạy trốn; Tỏa Sáng ở tick 77 trúng nó → thả lại 3 đom đóm tại chỗ, biến mất ở tick 197",
+  "events": [ { "tick": 76, "name": "drifter_steal", "data": { "drifter_id": "D1", "amount": 3, "carried": 5 } },
+              { "tick": 77, "name": "pulse", "data": { "stunned_ids": [] } },
+              { "tick": 77, "name": "drifter_drop", "data": { "drifter_id": "D1", "amount": 3 } } ],
+  "checks": [ { "tick": 1, "path": "drifters.0.state", "equals": "chase" }, { "tick": 76, "path": "drifters.0.state", "equals": "flee" },
+              { "tick": 77, "path": "motes_active", "equals": 3 }, { "tick": 196, "path": "drifters.0.state", "equals": "flee" },
+              { "tick": 197, "path": "drifters.0.state", "equals": "removed" }, { "tick": 77, "path": "player.flames", "equals": 3 } ] }

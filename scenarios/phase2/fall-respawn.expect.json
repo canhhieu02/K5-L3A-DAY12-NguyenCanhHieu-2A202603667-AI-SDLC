@@ -1,0 +1,5 @@
+{ "night": 1, "ticks": 220, "about": "Ra khỏi mép đảo ở tick 6, rơi 61 tick tới Y < −10 (tick 67): −1 Ngọn Lửa, mất 5 đom đóm; 60 tick sau (tick 127) hồi sinh ở (0,0,0), bất tử 90 tick",
+  "events": [ { "tick": 67, "name": "player_hit", "data": { "by": "fall", "flames": 2, "dropped": 0, "lost": 5 } } ],
+  "checks": [ { "tick": 127, "path": "player.pos", "equals": [0, 0, 0] }, { "tick": 127, "path": "player.invuln", "equals": true },
+              { "tick": 216, "path": "player.invuln", "equals": true }, { "tick": 217, "path": "player.invuln", "equals": false },
+              { "tick": 127, "path": "player.carried", "equals": 0 } ] }

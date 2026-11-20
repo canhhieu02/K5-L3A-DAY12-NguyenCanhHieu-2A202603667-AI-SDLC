@@ -1,0 +1,5 @@
+{ "night": 1, "ticks": 100, "about": "Lướt 14 m/s x 12 tick theo hướng chạy; hồi chiêu 90 tick tính từ lúc bắt đầu (nhấn ở tick 40 bị bỏ qua)",
+  "events": [ { "tick": 1, "name": "dash", "data": {} }, { "tick": 91, "name": "dash", "data": {} } ],
+  "no_events": ["player_hit"],
+  "checks": [ { "tick": 12, "path": "player.pos", "equals": [0, 0, 2.8] }, { "tick": 13, "path": "player.pos", "equals": [0, 0, 2.9] },
+              { "tick": 1, "path": "player.dash_cd_s", "equals": 1.5 } ] }

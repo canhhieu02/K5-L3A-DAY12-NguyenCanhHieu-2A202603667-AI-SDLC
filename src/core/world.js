@@ -498,7 +498,7 @@ export function step(g, input = {}) {
 
   // 3. Di chuyển Mây rồi kiểm tra rơi khỏi đảo
   if (active && !respawned) movePlayer(g, input, P, emit);
-  if (t.fall_enabled && active && p.pos[1] < RULES.fall_y) {
+  if (t.fall_enabled && active && p.pos[1] < RULES.fall_y - EPS) { // Y < −10, dung sai số thực (A1-15)
     p.flames = Math.max(0, p.flames - 1);
     const lost = p.carried;
     p.carried = 0;

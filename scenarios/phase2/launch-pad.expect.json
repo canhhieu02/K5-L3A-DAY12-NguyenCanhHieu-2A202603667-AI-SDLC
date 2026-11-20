@@ -1,0 +1,4 @@
+{ "night": 2, "ticks": 100, "about": "Đêm 2: đứng trên bục (20,0,18) → bay vy 14 + 24 m/s về tâm đảo B, phím di chuyển không ghi đè; đáp sau 84 tick (1.4 s) ở (51.613, 0, 6.619) trong đảo B",
+  "no_events": ["player_hit"],
+  "checks": [ { "tick": 83, "path": "player.grounded", "equals": false }, { "tick": 84, "path": "player.grounded", "equals": true },
+              { "tick": 84, "path": "player.pos", "near": [51.613, 0, 6.619], "tol": 0.01 } ] }

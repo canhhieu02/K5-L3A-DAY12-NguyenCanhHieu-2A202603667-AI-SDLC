@@ -1,0 +1,4 @@
+{ "night": 3, "ticks": 3700, "about": "Đêm 3: cơn gió đầu ở tick 1800 kéo dài 300 tick (hết ở 2100), cơn tiếp ở 3600",
+  "checks": [ { "tick": 1799, "path": "wind.active", "equals": false }, { "tick": 1800, "path": "wind.active", "equals": true },
+              { "tick": 2099, "path": "wind.active", "equals": true }, { "tick": 2100, "path": "wind.active", "equals": false },
+              { "tick": 3600, "path": "wind.active", "equals": true } ] }

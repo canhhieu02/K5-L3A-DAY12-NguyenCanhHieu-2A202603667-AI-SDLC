@@ -1,0 +1,6 @@
+{ "night": 2, "ticks": 2800, "about": "Đêm 2: nhặt Bùa Gió C1 (35,0,0) ở tick 1 → 600 tick chạy 7.2 m/s (tick 1 còn 6 m/s: x = 34.5 − 0.1 − 59×0.12 = 27.32 ở tick 60); lướt ở tick 61 và lại ở tick 73 không chờ hồi chiêu; bùa có lại ở tick 2701",
+  "events": [ { "tick": 1, "name": "charm_picked", "data": { "charm_id": "C1", "charm_ticks": 600 } },
+              { "tick": 61, "name": "dash", "data": {} }, { "tick": 73, "name": "dash", "data": {} } ],
+  "checks": [ { "tick": 60, "path": "player.pos", "near": [27.32, 0, 0], "tol": 0.001 }, { "tick": 1, "path": "player.charm_s", "equals": 10 },
+              { "tick": 1, "path": "charms.0.respawn_s", "equals": 45 }, { "tick": 2700, "path": "charms.0.available", "equals": false },
+              { "tick": 2701, "path": "charms.0.available", "equals": true } ] }
