@@ -11,9 +11,10 @@ const hyp = (p, q) => Math.hypot(p[0] - q[0], p[2] - q[2]);
 
 test('AC-01 game.contract.json khớp tuning game đang dùng', () => {
   const c = JSON.parse(fs.readFileSync('game.contract.json', 'utf8'));
-  assert.equal(c.contract_version, '1.2'); // P3-01: contract v1.2
+  // TICKET-04 (contract v1.3) đổi phiên bản + thêm bench_cmd/soak_cmd; tuning giữ nguyên v1.2 (phase-4.md "Test cũ thay đổi")
+  assert.equal(c.contract_version, '1.3');
   assert.deepEqual(c.tuning, T);
-  for (const k of ['team', 'build_cmd', 'run_cmd', 'headless_cmd']) assert.ok(c[k]);
+  for (const k of ['team', 'build_cmd', 'run_cmd', 'headless_cmd', 'bench_cmd', 'soak_cmd']) assert.ok(c[k]);
 });
 
 // P2-01 cập nhật thành P3-01: TICKET-03 đổi thời lượng 3 Đêm, thêm 8 khóa dầu/thắng/sức chứa, thay bảng điểm.

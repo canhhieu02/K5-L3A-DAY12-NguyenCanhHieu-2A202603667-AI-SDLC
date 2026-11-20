@@ -1,6 +1,6 @@
 # AGENTS.md — hướng dẫn cho agent (Đảo Đèn Lồng)
 
-Áp dụng cho mọi agent làm việc trong repo (Claude Code đọc qua `CLAUDE.md`). Phạm vi hiện hành: **Phase 3 — TICKET-03 "Đèn cạn dầu" (change request), Test Contract v1.2**.
+Áp dụng cho mọi agent làm việc trong repo (Claude Code đọc qua `CLAUDE.md`). Phạm vi hiện hành: **Phase 4 — TICKET-04 "Bình minh: phát hành v1.0.0" (non-functional + release), Test Contract v1.3**. Luật game = v1.2 (TICKET-03), không đổi ở Phase 4.
 
 ## Lệnh
 
@@ -9,13 +9,18 @@
 | Cài | `npm ci` |
 | Test (gọi CLI headless thật) | `npm test` |
 | Headless | `node src/headless/cli.js --seed 1 --night 1\|2\|3 --ticks N --out o.jsonl [--scenario f] [--inputs f] [--snapshot-every k]` |
-| Chơi | `npm run dev` → http://localhost:5173 (`?night=2` vào thẳng Đêm 2) |
+| Chơi (run_cmd) | `npm start` = `node server.mjs` → http://localhost:5173 (`?night=2` vào thẳng Đêm 2); `npm run dev` để sửa web |
+| Bảng xếp hạng | `node server.mjs --export-leaderboard out.json` (lưu ở `save/leaderboard.json`, đổi bằng `DDL_LEADERBOARD`) |
+| Bench (mở cửa sổ Chrome ~35 s) | `node scripts/bench.mjs --seed 42 --duration 30 --out bench.json` |
+| Soak | `node --expose-gc src/headless/soak.js --seed 7 --nights 10 --out soak.json` |
+| Gói release | `npm run release` → `release/dao-den-long-v1.0.0-web.zip` |
 | Build web | `npm run build` |
-| Sinh bằng chứng | `node scripts/evidence.mjs [test\|scenarios\|determinism\|perf\|web\|clone]` (xem skill `phase-evidence`) |
+| Sinh bằng chứng | `node scripts/evidence.mjs [test\|scenarios\|determinism\|perf\|web\|soak\|leaderboard\|bench\|clone]` (xem skill `phase-evidence`) |
 
 ## Nguồn yêu cầu
 
-1. Ticket hiện hành, nguyên văn: [docs/phases/ticket-03.md](docs/phases/ticket-03.md) — **thay thế** một số luật của TICKET-02 (mục đánh dấu [THAY THẾ]); phần còn lại của [ticket-02.md](docs/phases/ticket-02.md) vẫn hiệu lực. Ticket trước nữa: `prd-0.md` (v1.0).
+0. Ticket hiện hành (Phase 4), nguyên văn: [docs/phases/ticket-04.md](docs/phases/ticket-04.md) — bench, soak, bảng xếp hạng, dễ tiếp cận, đóng gói; **không đổi luật/đầu ra headless**. Spec: [phase-4.md](docs/phases/phase-4.md) (`P4-xx`), quyết định: [ADR 0002](docs/adr/0002-web-benchmark-and-local-server.md), giả định `A4-xx`.
+1. Ticket luật gần nhất, nguyên văn: [docs/phases/ticket-03.md](docs/phases/ticket-03.md) — **thay thế** một số luật của TICKET-02 (mục đánh dấu [THAY THẾ]); phần còn lại của [ticket-02.md](docs/phases/ticket-02.md) vẫn hiệu lực. Ticket trước nữa: `prd-0.md` (v1.0).
 2. Spec + acceptance criteria: [docs/phases/phase-3.md](docs/phases/phase-3.md) (`P3-xx`, bảng "Test cũ thay đổi"), [phase-2.md](docs/phases/phase-2.md) (`P2-xx` còn hiệu lực).
 3. Quyết định mô hình đèn + luật thắng: [docs/adr/0001-lantern-fuel-and-dawn-win.md](docs/adr/0001-lantern-fuel-and-dawn-win.md). Breaking changes: [CHANGELOG.md](CHANGELOG.md).
 4. Giả định cho chỗ ticket chưa nói: [docs/assumptions.md](docs/assumptions.md) (`A3-xx`, `A2-xx`). **Không tự thêm luật**; chỗ mơ hồ → thêm dòng giả định + test, ghi câu hỏi mở cho GV trong `phase-3.md`.
@@ -26,8 +31,10 @@
 |---|---|---|
 | `src/core/` | Logic thuần, tất định. `tuning.js` (`TUNING` = `tuning` của contract, `RULES` = số chuẩn khác), `maps.js` (bản đồ 3 Đêm), `world.js` (`createGame`, `step`, `snapshot`), `validate.js` | `three`, DOM, `window`, `Math.random`, `Date.now` (test `web-palette.test.js` tự kiểm). Ngẫu nhiên chỉ qua `g.rng` (`createRng(seed)`) |
 | `src/headless/cli.js` | Test Contract: tham số, đọc/validate file (sai định dạng → mã 2), ghi JSONL | Luật game |
-| `src/web/` | Chỉ hiển thị + input: `scene.js` (dựng cảnh từ map), `main.js` (chuỗi 3 Đêm, HUD, menu), `palette.js` (bảng màu chuẩn), `audio.js`, `settings.js` | Luật game; mọi hành vi phải đi qua `step()` |
-| `tests/` | `contract.test.js` (AC Phase 1, cập nhật theo v1.1 + v1.2), `phase2-core`, `phase2-maps`, `phase2-features`, `phase3-fuel`, `web-palette`, `debug-mode` | `test.skip` / xóa test cũ không ghi lý do |
+| `src/headless/soak.js`, `scripts/bench.mjs`, `server.mjs` | soak_cmd, bench_cmd (Chrome + CDP), run_cmd (phục vụ `dist/` + API bảng xếp hạng) | Luật game; cảnh bench dựng bằng `createBenchGame` trong core (cờ `g.bench` chỉ tắt hao dầu/nhặt/hit/sinh/kết thúc) |
+| `src/shared/` | Thuần, không luật game: `leaderboard.js` (tên, sắp xếp top 10), `bench-stats.js` (số đo, camera bench) | DOM |
+| `src/web/` | Chỉ hiển thị + input: `scene.js` (dựng cảnh từ map), `main.js` (chuỗi 3 Đêm, HUD, menu, phụ đề, bảng xếp hạng, chế độ `?bench=1`), `palette.js` (bảng màu chuẩn), `audio.js`, `settings.js`, `keybinds.js` (đổi phím, thuần), `board-store.js` | Luật game; mọi hành vi phải đi qua `step()` |
+| `tests/` | `contract.test.js` (AC Phase 1, cập nhật theo v1.1 + v1.2), `phase2-core`, `phase2-maps`, `phase2-features`, `phase3-fuel`, `phase4-release`, `web-palette`, `debug-mode` | `test.skip` / xóa test cũ không ghi lý do |
 | `scenarios/phase2/`, `scenarios/phase3/` | Scenario mẫu + `*.expect.json` (kỳ vọng ghi **trước** khi chạy) | — |
 | `evidence/phase-N/` | Bằng chứng sinh từ lệnh thật | **Sửa tay** |
 

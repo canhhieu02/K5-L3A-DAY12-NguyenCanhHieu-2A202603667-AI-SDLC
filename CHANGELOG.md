@@ -2,6 +2,38 @@
 
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/). Phiên bản = phiên bản Test Contract.
 
+## [1.3] — Phase 4, TICKET-04 "Bình minh: phát hành v1.0.0" (bản phát hành v1.0.0)
+
+Spec + AC: [docs/phases/phase-4.md](docs/phases/phase-4.md). Quyết định đo hiệu năng bản web: [ADR 0002](docs/adr/0002-web-benchmark-and-local-server.md).
+
+**Luật, số liệu `tuning` và đầu ra headless (`cli.js`) không đổi** so với v1.2 — mọi scenario Phase 3 và test AC/P2/P3 còn hiệu lực chạy nguyên văn.
+
+### Thay đổi contract
+
+| # | Thay đổi | Trước (v1.2) | Sau (v1.3) |
+|---|---|---|---|
+| C1 | `contract_version` | `"1.2"` | `"1.3"` |
+| C2 | `run_cmd` | `npm run dev` (vite dev server) | `node server.mjs` — phục vụ bản build, lưu bảng xếp hạng ra đĩa, nhận `--export-leaderboard out.json` (`npm run dev` vẫn chơi được) |
+| C3 | Khóa mới | — | `bench_cmd: "node scripts/bench.mjs"`, `soak_cmd: "node --expose-gc src/headless/soak.js"` |
+| C4 | Node | ≥ 20 | ≥ 22 cho bench (WebSocket có sẵn để điều khiển Chrome); headless vẫn chạy trên Node 20 |
+
+### Added
+
+- **Benchmark** `node scripts/bench.mjs --seed 42 --duration 30 --out bench.json`: mở Chrome/Edge cửa sổ, vùng vẽ đúng 1280×720, tắt vsync; cảnh chuẩn `createBenchGame` (200 Bóng Mực `wander`, 100 đom đóm, L1–L3 fuel 100; tắt sinh thêm, sát thương, nhặt, hao dầu, kết thúc Đêm); camera bay vòng R 30 m, Y 15 m, 15 s/vòng; 3 s khởi động; số đo theo định nghĩa ticket.
+- **Soak** `node --expose-gc src/headless/soak.js --seed 7 --nights 10 --out soak.json`: 10 Đêm xoay vòng trong một tiến trình, input ngẫu nhiên theo seed, đo RSS.
+- **Bảng xếp hạng cục bộ**: nhập tên sau Bình Minh hoặc sau khi thua; top 10 (điểm giảm dần, bằng điểm ai đạt trước đứng trên); lưu `save/leaderboard.json`; màn hình từ menu chính; xuất `node server.mjs --export-leaderboard out.json`. Tên nhận cả chữ tiếng Việt có dấu.
+- **Dễ tiếp cận**: đổi phím mọi hành động (báo trùng phím, "Khôi phục mặc định", được lưu); phụ đề + chỉ báo hình ảnh (Bóng Mực xuất hiện kèm mũi tên ở mép màn hình, gió sắp thổi, 10 s cuối có số đếm lớn, đèn fuel < 30, bị đánh, đèn tắt…); Giảm chuyển động (tắt rung camera, chớp màn hình, đồng hồ nhấp nháy; mặc định theo `prefers-reduced-motion`); mọi chữ UI ≥ 18 px, tùy chọn Chữ lớn ×1.25.
+- Rung camera + chớp đỏ khi Mây bị đánh (chỉ web; tắt bằng Giảm chuyển động).
+- `npm start`, `npm run bench`, `npm run soak`, `npm run release` (gói `release/dao-den-long-v1.0.0-web.zip`), `prepare` tự build `dist/` khi `npm ci`.
+- Test `tests/phase4-release.test.js` (P4-01…P4-42); bằng chứng `evidence/phase-4/` (bench.json, soak.json, leaderboard-export.json, ảnh web, clone sạch).
+
+### Changed
+
+- Đổi phím thay cho phím cứng: Tỏa Sáng chỉ còn một phím (mặc định F; J cũ có thể gán lại), tạm dừng = Esc (cố định) hoặc phím gán (mặc định P).
+- Cỡ chữ HUD/menu: các chữ 11–16 px trước đây nâng lên ≥ 18 px; ô hồi chiêu rộng hơn.
+- `vite.config.js`: `base: './'` để `dist/` chạy ở thư mục bất kỳ; API bảng xếp hạng có cả ở `npm run dev`/`preview`.
+- `scripts/evidence.mjs`: mặc định Phase 4, thêm bước `bench`, `soak`, `leaderboard`; clone sạch kiểm đúng 2 lệnh README (`npm ci`, `npm start`).
+
 ## [1.2] — Phase 3, TICKET-03 "Đèn cạn dầu"
 
 Quyết định thiết kế: [docs/adr/0001-lantern-fuel-and-dawn-win.md](docs/adr/0001-lantern-fuel-and-dawn-win.md). Spec + AC: [docs/phases/phase-3.md](docs/phases/phase-3.md).
@@ -44,8 +76,23 @@ Quyết định thiết kế: [docs/adr/0001-lantern-fuel-and-dawn-win.md](docs/
 
 ## [1.1] — Phase 2, TICKET-02 "Ba hòn đảo"
 
-Xem [docs/phases/phase-2.md](docs/phases/phase-2.md): số chuẩn, 3 Đêm, lướt/rơi/bục nhảy/gió, Gió Lạc, Bùa Gió, tạm dừng, snapshot/scenario/sự kiện v1.1.
+Chi tiết + AC: [docs/phases/phase-2.md](docs/phases/phase-2.md).
+
+### Added
+- Số chuẩn của ticket vào `tuning` (tốc độ, bán kính, thời gian…); thứ tự 12 bước trong một tick bắt buộc.
+- Đêm 2 "Đảo Cau" (2 đảo + cầu + bục nhảy) và Đêm 3 "Đảo Chuông" (3 tầng, dốc, tháp chuông, gió); chuỗi 3 Đêm, cộng điểm các Đêm thắng.
+- Lướt, rơi khỏi đảo + hồi sinh, bục nhảy, gió mạnh mỗi 30 s; Gió Lạc cướp đom đóm; Bùa Gió tăng tốc; tạm dừng.
+- Snapshot/scenario/sự kiện v1.1 (`dash`, `charm_picked`, `drifter_steal`, `drifter_drop`, `paused`, `resumed`…); bảng màu chuẩn; âm thanh WebAudio; menu, cài đặt, chế độ thử.
+- `AGENTS.md`, 3 skill, `scripts/evidence.mjs`, scenario mẫu có kỳ vọng ghi trước.
+
+### Changed (so với v1.0)
+- `contract_version` `"1.1"`; số liệu Phase 1 tự chọn được thay bằng số chuẩn (test Phase 1 tham số hóa theo `T.x`).
 
 ## [1.0] — Phase 1, PRD-0
 
-Xem [docs/phases/phase-1.md](docs/phases/phase-1.md).
+Chi tiết + AC: [docs/phases/phase-1.md](docs/phases/phase-1.md).
+
+### Added
+- Game 3D góc nhìn thứ ba (three.js + Vite): Mây di chuyển, nhảy, nhặt đom đóm, nạp đèn để thắp, Tỏa Sáng làm choáng Bóng Mực, vùng an toàn quanh đèn, 3 Ngọn Lửa; Đêm 1 thắng khi thắp đủ đèn.
+- Core thuần tất định (`src/core`, rng theo seed) dùng chung cho web và headless; CLI headless Test Contract v1.0 (JSONL snapshot/event/end, scenario, inputs, mã thoát 1/2).
+- `game.contract.json`, test AC-01…AC-25, giả định A1-xx.

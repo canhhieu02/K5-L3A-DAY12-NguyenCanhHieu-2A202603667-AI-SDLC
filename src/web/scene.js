@@ -363,10 +363,17 @@ export class WorldView {
       pos.needsUpdate = true;
     }
 
-    // Camera góc nhìn thứ ba
-    const th = (view.camYaw * Math.PI) / 180;
-    this.camera.position.set(p.pos[0] + Math.sin(th) * 8.5, p.pos[1] + 5.2, p.pos[2] + Math.cos(th) * 8.5);
-    this.camera.lookAt(p.pos[0], p.pos[1] + 1, p.pos[2]);
+    if (view.cam) {
+      // bench (TICKET-04): camera bay vòng, luôn nhìn vào (0,0,0)
+      this.camera.position.set(view.cam[0], view.cam[1], view.cam[2]);
+      this.camera.lookAt(0, 0, 0);
+    } else {
+      // Camera góc nhìn thứ ba (+ rung nhẹ khi bị đánh, tắt khi bật "Giảm chuyển động")
+      const th = (view.camYaw * Math.PI) / 180;
+      const [sx, sy] = view.shake || [0, 0];
+      this.camera.position.set(p.pos[0] + Math.sin(th) * 8.5 + sx, p.pos[1] + 5.2 + sy, p.pos[2] + Math.cos(th) * 8.5);
+      this.camera.lookAt(p.pos[0], p.pos[1] + 1, p.pos[2]);
+    }
     this.renderer.render(this.scene, this.camera);
     return lit;
   }

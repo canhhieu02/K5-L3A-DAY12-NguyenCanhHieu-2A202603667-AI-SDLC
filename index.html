@@ -5,79 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đảo Đèn Lồng</title>
     <style>
-      /* --ui-text, --ui-danger, --gold, --sky, --lantern được gán từ src/web/palette.js khi chạy */
-      :root { --ui-text: #f5f1e6; --ui-danger: #ff5a5f; --gold: #f2c14e; --sky: #0e1430; --lantern: #ffb347; --scarf: #c8102e; }
+      /* --ui-text, --ui-danger, --gold, --sky, --lantern được gán từ src/web/palette.js khi chạy.
+         Cỡ chữ (TICKET-04 mục 4): mọi font-size ≥ 18px × --fs; "Chữ lớn" đặt --fs = 1.25 (tests/phase4-*.test.js kiểm). */
+      :root { --ui-text: #f5f1e6; --ui-danger: #ff5a5f; --gold: #f2c14e; --sky: #0e1430; --lantern: #ffb347; --scarf: #c8102e;
+              --shade: #7a3cff; --fs: 1; }
+      body.large { --fs: 1.25; }
       html, body { margin: 0; height: 100%; overflow: hidden; background: var(--sky); color: var(--ui-text);
-                   font-family: "Segoe UI", system-ui, sans-serif; user-select: none; }
+                   font-family: "Segoe UI", system-ui, sans-serif; font-size: calc(18px * var(--fs)); user-select: none; }
       canvas { display: block; }
       .hidden { display: none !important; }
 
       /* ---------- HUD ---------- */
       #hud { position: fixed; inset: 0; pointer-events: none; }
-      .panel { background: rgba(14, 20, 48, 0.55); border-radius: 10px; padding: 6px 12px; }
-      #hud-flames { position: absolute; top: 14px; left: 16px; font-size: 26px; letter-spacing: 4px; }
+      .panel { background: rgba(14, 20, 48, 0.62); border-radius: 10px; padding: 6px 12px; }
+      #hud-flames { position: absolute; top: 14px; left: 16px; font-size: calc(26px * var(--fs)); letter-spacing: 4px; }
       #hud-flames .off { opacity: 0.2; filter: grayscale(1); }
-      #hud-timer { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font: 600 30px/1.2 ui-monospace, monospace; }
+      #hud-timer { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-family: ui-monospace, monospace;
+                   font-weight: 600; font-size: calc(30px * var(--fs)); line-height: 1.2; }
       #hud-timer.danger { color: var(--ui-danger); animation: blink 0.8s steps(2, start) infinite; }
+      body.rm #hud-timer.danger { animation: none; } /* Giảm chuyển động: không nhấp nháy đồng hồ */
       /* Bảng màu dễ phân biệt: cảnh báo màu trắng kèm ⚠ (TICKET-03 mục 6) */
       body.cb #hud-timer.danger::before, body.cb #hud-warn::before, body.cb #hud-lanterns.danger::before { content: "⚠ "; }
       #hud-lanterns.danger { color: var(--ui-danger); }
-      #hud-warn { position: absolute; top: 100px; right: 16px; color: var(--ui-danger); font-size: 16px; font-weight: 600; }
-      #hud-carry { position: absolute; bottom: 46px; left: 50%; transform: translateX(-50%); font: 600 15px ui-monospace, monospace; color: var(--gold); }
+      #hud-warn { position: absolute; top: calc(96px * var(--fs)); right: 16px; color: var(--ui-danger); font-size: calc(18px * var(--fs)); font-weight: 600; }
+      #hud-carry { position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); font-family: ui-monospace, monospace;
+                   font-weight: 600; font-size: calc(18px * var(--fs)); color: var(--gold); }
       @keyframes blink { to { visibility: hidden; } }
-      #hud-right { position: absolute; top: 14px; right: 16px; text-align: right; font-size: 18px; line-height: 1.5; }
+      #hud-right { position: absolute; top: 14px; right: 16px; text-align: right; font-size: calc(18px * var(--fs)); line-height: 1.5; }
       #hud-score { color: var(--gold); font-weight: 700; }
-      #hud-night { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); font-size: 14px; opacity: 0.8; }
+      #hud-night { position: absolute; top: calc(62px * var(--fs)); left: 50%; transform: translateX(-50%); font-size: calc(18px * var(--fs)); opacity: 0.85; }
       #hud-bar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
       #hud-bar span { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--gold); background: rgba(0,0,0,0.35); }
       #hud-bar span.on { background: radial-gradient(#fff6c2, #ffe58a 60%, #f2c14e); box-shadow: 0 0 10px #ffe58a; }
       #hud-cds { position: absolute; bottom: 16px; right: 18px; display: flex; gap: 12px; }
-      .cd { position: relative; width: 58px; height: 58px; border-radius: 12px; border: 2px solid var(--gold); overflow: hidden;
+      .cd { position: relative; min-width: calc(84px * var(--fs)); height: calc(70px * var(--fs)); border-radius: 12px; border: 2px solid var(--gold); overflow: hidden;
             background: rgba(14, 20, 48, 0.7); display: flex; align-items: center; justify-content: center; flex-direction: column;
-            font-size: 11px; text-align: center; }
-      .cd b { font-size: 20px; }
+            font-size: calc(18px * var(--fs)); text-align: center; padding: 0 4px; box-sizing: border-box; }
+      .cd b { font-size: calc(20px * var(--fs)); }
       .cd .shade { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); }
       .cd.charm { border-color: var(--scarf); box-shadow: 0 0 10px var(--scarf); }
-      #hud-prompt { position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%); font-size: 20px; }
-      #hud-prompt kbd { border: 2px solid var(--gold); border-radius: 6px; padding: 0 7px; color: var(--gold); font-weight: 700; }
-      #hud-wind { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); color: #9fd18b; font-size: 18px; }
-      #hud-arrow { position: absolute; width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent;
-                   border-bottom: 30px solid var(--lantern); filter: drop-shadow(0 0 6px var(--lantern)); transform-origin: 50% 50%; }
-      #hud-fps { position: absolute; bottom: 8px; left: 10px; font: 12px monospace; opacity: 0.7; }
+      #hud-prompt { position: absolute; bottom: calc(70px * var(--fs)); left: 50%; transform: translateX(-50%); font-size: calc(20px * var(--fs)); white-space: nowrap; }
+      kbd { border: 2px solid var(--gold); border-radius: 6px; padding: 0 7px; color: var(--gold); font-weight: 700; font-family: inherit; }
+      .arrow { position: absolute; width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent;
+               border-bottom: 30px solid var(--lantern); filter: drop-shadow(0 0 6px var(--lantern)); transform-origin: 50% 50%; }
+      #hud-shade-arrow { border-bottom-color: var(--shade); filter: drop-shadow(0 0 6px var(--shade)); }
+      #hud-fps { position: absolute; bottom: 8px; left: 10px; font-family: monospace; font-size: calc(18px * var(--fs)); opacity: 0.75; }
+      /* Phụ đề / chỉ báo hình ảnh cho âm thanh và cảnh báo (TICKET-04 mục 4) */
+      #hud-captions { position: absolute; top: calc(100px * var(--fs)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column;
+                      align-items: center; gap: 6px; font-size: calc(20px * var(--fs)); font-weight: 600; }
+      #hud-captions .panel { white-space: nowrap; }
+      #hud-captions .danger { color: var(--ui-danger); }
+      #hud-captions .shade { color: #c9b3ff; }
+      body.cb #hud-captions .shade { color: #7fd8ff; }
+      #hud-captions .wind { color: #9fd18b; }
+      #hud-count { position: absolute; top: 34%; left: 50%; transform: translate(-50%, -50%); font-size: calc(72px * var(--fs)); font-weight: 800;
+                   color: var(--ui-danger); text-shadow: 0 0 16px rgba(0,0,0,0.9); opacity: 0.85; }
+      #flash { position: fixed; inset: 0; pointer-events: none; background: var(--ui-danger); opacity: 0; }
 
       /* ---------- màn hình ---------- */
       .screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column;
-                text-align: center; background: rgba(8, 10, 30, 0.72); padding: 16px; box-sizing: border-box; }
-      .screen h1 { font-size: 52px; margin: 0 0 6px; color: var(--lantern); text-shadow: 0 0 18px rgba(255, 179, 71, 0.6); }
-      .screen h2 { font-size: 30px; margin: 0 0 8px; color: var(--gold); }
-      .screen p { max-width: 640px; font-size: 18px; line-height: 1.5; margin: 6px 0; }
+                text-align: center; background: rgba(8, 10, 30, 0.72); padding: 16px; box-sizing: border-box; overflow-y: auto; }
+      .screen h1 { font-size: calc(52px * var(--fs)); margin: 0 0 6px; color: var(--lantern); text-shadow: 0 0 18px rgba(255, 179, 71, 0.6); }
+      .screen h2 { font-size: calc(30px * var(--fs)); margin: 0 0 8px; color: var(--gold); }
+      .screen h3 { font-size: calc(22px * var(--fs)); margin: 14px 0 6px; color: var(--gold); }
+      .screen p { max-width: 680px; font-size: calc(18px * var(--fs)); line-height: 1.5; margin: 6px 0; }
       .screen .quote { font-style: italic; opacity: 0.9; }
       .buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; min-width: 240px; }
-      button { font: inherit; font-size: 18px; padding: 10px 18px; border-radius: 10px; cursor: pointer; color: var(--ui-text);
+      button { font: inherit; font-size: calc(18px * var(--fs)); padding: 10px 18px; border-radius: 10px; cursor: pointer; color: var(--ui-text);
                background: rgba(242, 193, 78, 0.12); border: 2px solid var(--gold); }
-      button:hover, button:focus-visible { background: rgba(242, 193, 78, 0.3); outline: none; }
-      .keys { font-size: 14px; opacity: 0.8; margin-top: 18px; line-height: 1.7; }
-      .keys kbd { border: 1px solid var(--gold); border-radius: 4px; padding: 0 5px; }
-      label { display: flex; justify-content: space-between; gap: 16px; align-items: center; font-size: 18px; margin: 8px 0; min-width: 320px; }
+      button:hover, button:focus-visible { background: rgba(242, 193, 78, 0.3); outline: 3px solid var(--ui-text); outline-offset: 2px; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .keys { font-size: calc(18px * var(--fs)); opacity: 0.85; margin-top: 18px; line-height: 1.8; }
+      label { display: flex; justify-content: space-between; gap: 16px; align-items: center; font-size: calc(18px * var(--fs)); margin: 6px 0; min-width: 340px; }
       input[type=range] { width: 180px; accent-color: #f2c14e; }
+      input[type=checkbox] { width: 22px; height: 22px; accent-color: #f2c14e; }
+      input[type=text] { font: inherit; font-size: calc(20px * var(--fs)); padding: 8px 12px; border-radius: 8px; border: 2px solid var(--gold);
+                         background: rgba(0,0,0,0.4); color: var(--ui-text); width: 14em; text-align: center; }
+      .note { font-size: calc(18px * var(--fs)); opacity: 0.8; }
+      .err { color: var(--ui-danger); font-weight: 600; min-height: 1.5em; }
+      body.cb .err:not(:empty)::before { content: "⚠ "; }
+      /* Cài đặt: 2 cột (chung | phím) */
+      #scr-settings { justify-content: flex-start; padding-top: 8px; }
+      #scr-settings h1 { font-size: calc(36px * var(--fs)); margin: 0; }
+      #scr-settings h3 { margin: 6px 0 4px; }
+      #scr-settings .buttons { margin-top: 6px; }
+      .settings-cols { display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+      #keybinds { border-collapse: collapse; font-size: calc(18px * var(--fs)); }
+      #keybinds td { padding: 1px 8px; text-align: left; }
+      #keybinds button { padding: 1px 12px; min-width: 7em; }
+      #keybinds tr.conflict td:first-child { color: var(--ui-danger); }
+      #keybinds tr.conflict button { border-color: var(--ui-danger); }
+      body.cb #keybinds tr.conflict td:first-child::before { content: "⚠ "; }
+      #keybinds tr.listening button { background: rgba(242, 193, 78, 0.45); }
+      /* Bảng xếp hạng */
+      #board { border-collapse: collapse; font-size: calc(18px * var(--fs)); min-width: 560px; }
+      #board th, #board td { padding: 6px 12px; border-bottom: 1px solid rgba(242, 193, 78, 0.3); }
+      #board th { color: var(--gold); }
+      #board tr.me td { color: var(--lantern); font-weight: 700; }
+      #save-form { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; padding: 12px 18px;
+                   border: 2px dashed rgba(242, 193, 78, 0.5); border-radius: 12px; }
+      #save-form .row { display: flex; gap: 10px; align-items: center; }
     </style>
   </head>
   <body>
+    <div id="flash"></div>
     <div id="hud" class="hidden">
       <div id="hud-flames" class="panel"></div>
       <div id="hud-timer" class="panel">04:00</div>
       <div id="hud-night"></div>
       <div id="hud-right" class="panel"><div id="hud-lanterns"></div><div id="hud-score"></div></div>
-      <div id="hud-wind" class="panel hidden">🍃 Gió sắp nổi!</div>
+      <div id="hud-captions" aria-live="polite"></div>
+      <div id="hud-count" class="hidden"></div>
       <div id="hud-prompt" class="panel hidden"></div>
       <div id="hud-warn" class="panel hidden"></div>
       <div id="hud-carry"></div>
       <div id="hud-bar"></div>
       <div id="hud-cds">
-        <div class="cd" id="cd-dash"><b>⇧</b>Lướt<div class="shade"></div></div>
-        <div class="cd" id="cd-pulse"><b>F</b>Tỏa Sáng<div class="shade"></div></div>
+        <div class="cd" id="cd-dash"><b id="cd-dash-key">⇧</b>Lướt<div class="shade"></div></div>
+        <div class="cd" id="cd-pulse"><b id="cd-pulse-key">F</b>Tỏa Sáng<div class="shade"></div></div>
       </div>
-      <div id="hud-arrow" class="hidden"></div>
+      <div id="hud-arrow" class="arrow hidden"></div>
+      <div id="hud-shade-arrow" class="arrow hidden"></div>
       <div id="hud-fps"></div>
     </div>
 
@@ -86,6 +134,7 @@
       <p>Ba hòn đảo giữa biển mây đã tắt đèn. Giúp Mây gom đom đóm, thắp đèn và giữ đủ đèn còn sáng tới bình minh.</p>
       <div class="buttons">
         <button data-act="start">Bắt đầu</button>
+        <button data-act="board">Bảng xếp hạng</button>
         <button data-act="settings">Cài đặt</button>
       </div>
       <div class="buttons dev-only hidden" style="flex-direction: row; justify-content: center">
@@ -93,10 +142,7 @@
         <button data-act="goto" data-night="2">Đêm 2</button>
         <button data-act="goto" data-night="3">Đêm 3</button>
       </div>
-      <div class="keys">
-        <kbd>W A S D</kbd> đi · <kbd>Chuột kéo</kbd> / <kbd>← →</kbd> xoay camera · <kbd>Space</kbd> nhảy · <kbd>Shift</kbd> lướt<br />
-        <kbd>E</kbd> thắp đèn / châm dầu · <kbd>F</kbd> Tỏa Sáng (3 đom đóm) · <kbd>Esc</kbd> / <kbd>P</kbd> tạm dừng
-      </div>
+      <div class="keys" id="menu-keys"></div>
     </div>
 
     <div id="scr-intro" class="screen hidden">
@@ -110,6 +156,7 @@
     <div id="scr-result" class="screen hidden">
       <h1 id="result-title"></h1>
       <p id="result-text"></p>
+      <div class="save-slot"></div>
       <div class="buttons" id="result-buttons"></div>
     </div>
 
@@ -127,12 +174,28 @@
 
     <div id="scr-settings" class="screen hidden">
       <h1>Cài đặt</h1>
-      <label>Âm lượng <input type="range" id="set-volume" min="0" max="1" step="0.05" /></label>
-      <label>Độ nhạy chuột <input type="range" id="set-sens" min="0.2" max="3" step="0.1" /></label>
-      <label>Hiện FPS <input type="checkbox" id="set-fps" /></label>
-      <label>Bảng màu dễ phân biệt <input type="checkbox" id="set-cb" /></label>
-      <label>Chế độ thử (chọn Đêm, qua Đêm) <input type="checkbox" id="set-dev" /></label>
-      <p style="font-size: 14px; opacity: 0.75">Phím di chuyển lúc ăn lúc không? Hãy tắt bộ gõ tiếng Việt (Unikey: Ctrl+Shift hoặc chuyển sang E).</p>
+      <div class="settings-cols">
+        <div>
+          <h3>Chung</h3>
+          <label>Âm lượng <input type="range" id="set-volume" min="0" max="1" step="0.05" /></label>
+          <label>Độ nhạy chuột <input type="range" id="set-sens" min="0.2" max="3" step="0.1" /></label>
+          <label>Hiện FPS <input type="checkbox" id="set-fps" /></label>
+          <h3>Dễ tiếp cận</h3>
+          <label>Bảng màu dễ phân biệt <input type="checkbox" id="set-cb" /></label>
+          <label>Phụ đề / chỉ báo hình ảnh <input type="checkbox" id="set-captions" /></label>
+          <label>Giảm chuyển động (tắt rung, chớp) <input type="checkbox" id="set-rm" /></label>
+          <label>Chữ lớn (×1.25) <input type="checkbox" id="set-large" /></label>
+          <label>Chế độ thử (chọn Đêm, qua Đêm) <input type="checkbox" id="set-dev" /></label>
+        </div>
+        <div>
+          <h3>Phím</h3>
+          <table id="keybinds"></table>
+          <p class="err" id="keys-err"></p>
+          <p class="note">Bấm vào ô phím rồi nhấn phím mới (Esc để hủy).<br />Esc luôn mở menu tạm dừng.</p>
+          <button data-act="keys-reset">Khôi phục mặc định</button>
+        </div>
+      </div>
+      <p class="note">Phím di chuyển lúc ăn lúc không? Hãy tắt bộ gõ tiếng Việt (Unikey: Ctrl+Shift hoặc chuyển sang E).</p>
       <div class="buttons"><button data-act="settings-back">Xong</button></div>
     </div>
 
@@ -141,8 +204,27 @@
       <h1>Ba hòn đảo đã sáng lại!</h1>
       <p class="quote">"Cháu làm được rồi, Mây. Biển mây lại ấm ánh đèn." — Ông Đăng</p>
       <p id="dawn-score"></p>
+      <div class="save-slot"></div>
       <div class="buttons"><button data-act="menu">Về menu</button></div>
     </div>
+
+    <div id="scr-board" class="screen hidden">
+      <h1>Bảng xếp hạng</h1>
+      <table id="board"></table>
+      <p class="note" id="board-where"></p>
+      <div class="buttons"><button data-act="board-back">Về menu</button></div>
+    </div>
+
+    <!-- form lưu điểm: được chuyển vào màn Bình Minh hoặc màn thua -->
+    <form id="save-form" class="hidden" autocomplete="off">
+      <div id="save-summary"></div>
+      <div class="row">
+        <input type="text" id="save-name" maxlength="12" placeholder="Tên của bạn" aria-label="Tên (3–12 ký tự)" />
+        <button type="submit" id="save-btn">Lưu điểm</button>
+      </div>
+      <div class="note">3–12 ký tự: chữ (có dấu được), số, dấu _</div>
+      <div class="err" id="save-err"></div>
+    </form>
 
     <script type="module" src="/src/web/main.js"></script>
   </body>

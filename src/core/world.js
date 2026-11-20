@@ -282,6 +282,41 @@ export function createGame({ seed = 1, night = 1, scenario = null, tuning = TUNI
   return g;
 }
 
+// ---------- cảnh benchmark (TICKET-04 mục 1) ----------
+export const BENCH = { shades: 200, motes: 100, lit: ['L1', 'L2', 'L3'] };
+/**
+ * Cảnh bench chuẩn: Đêm 1, Mây đứng yên ở (0,0,0), L1–L3 sáng fuel 100, đúng 200 Bóng Mực `wander` và 100 đom đóm
+ * rải đều trên đảo bằng g.rng (seed). g.bench = true: step() bỏ hao dầu, nhặt, sát thương, sinh thêm và kết thúc Đêm;
+ * Bóng Mực vẫn đi theo luật wander/chase bình thường. Headless contract không bao giờ bật cờ này.
+ */
+export function createBenchGame(seed = 42) {
+  const g = createGame({
+    seed, night: 1,
+    scenario: {
+      random_motes: false, random_shades: false, random_drifters: false, wind_enabled: false, motes: [], shades: [], charms: [],
+      lanterns: BENCH.lit.map((id) => ({ id, lit: true, fuel: TUNING.fuel_max })),
+    },
+  });
+  g.bench = true;
+  const R = g.map.radius;
+  // điểm đều theo diện tích trên đĩa đảo (r = R·√u); Bóng Mực không đặt trong vùng an toàn (luật đẩy ra ngay)
+  const randomPoint = (ok) => {
+    for (;;) {
+      const r = R * Math.sqrt(g.rng());
+      const a = g.rng() * 2 * Math.PI;
+      const x = r * Math.cos(a);
+      const z = r * Math.sin(a);
+      if (g.map.groundAt(x, z) != null && ok([x, 0, z])) return [x, g.map.groundAt(x, z), z];
+    }
+  };
+  for (let i = 0; i < BENCH.shades; i++) {
+    const [x, y, z] = randomPoint((pt) => !inLitZone(g, pt));
+    g.shades.push(makeShade(g, { id: `S${g.nextShadeId++}`, pos: [x, y + RULES.shade_hover, z], state: 'wander' }));
+  }
+  for (let i = 0; i < BENCH.motes; i++) addMote(g, randomPoint(() => true), 'random');
+  return g;
+}
+
 /**
  * CHỈ dùng cho chế độ thử của web (headless không gọi): thắp mọi đèn đầy dầu (không cộng điểm thắp)
  * và tua thời gian để tick kế tiếp là bình minh. Thắng/thua vẫn do step() xét ở bước 11 (TICKET-03).
@@ -569,8 +604,8 @@ export function step(g, input = {}) {
     respawned = true;
   }
   // 2 (TICKET-03). Dầu đèn: hao 1/s mỗi đèn sáng + 5/s mỗi Bóng Mực đang drain (đơn vị nguyên 1/60 fuel)
-  const decayU = fuelU(t.fuel_decay_per_s / TICKS_PER_SECOND);
-  const drainU = fuelU(t.drain_per_s / TICKS_PER_SECOND);
+  const decayU = g.bench ? 0 : fuelU(t.fuel_decay_per_s / TICKS_PER_SECOND); // bench: tắt hao dầu (TICKET-04)
+  const drainU = g.bench ? 0 : fuelU(t.drain_per_s / TICKS_PER_SECOND);
   for (const L of g.lanterns) if (L.lit) L.fuelU -= decayU;
   const drainers = [...g.shades].sort(idCmp).filter((s) => s.state === 'drain' && s.drainLantern.lit);
   for (const s of drainers) { s.drainLantern.fuelU -= drainU; s.drainTicks++; }
@@ -603,8 +638,8 @@ export function step(g, input = {}) {
   }
   const present = p.waitTicks === 0;
 
-  // 4. Nhặt đom đóm (theo thứ tự id, không vượt sức chứa 10 + 2 × successful_lights, tối đa 20)
-  if (present) {
+  // 4. Nhặt đom đóm (theo thứ tự id, không vượt sức chứa 10 + 2 × successful_lights, tối đa 20); bench: tắt
+  if (present && !g.bench) {
     const cap = capacityOf(g);
     for (let i = 0; i < g.motes.length && p.carried < cap; ) {
       const m = g.motes[i];
@@ -742,8 +777,8 @@ export function step(g, input = {}) {
       emit('drifter_steal', { drifter_id: d.id, amount, carried: p.carried });
     }
   }
-  // Bóng Mực: tối đa 1 lần mất Ngọn Lửa mỗi tick, xét theo id tăng dần
-  if (present && p.invulnTicks === 0) {
+  // Bóng Mực: tối đa 1 lần mất Ngọn Lửa mỗi tick, xét theo id tăng dần; bench: tắt sát thương
+  if (present && p.invulnTicks === 0 && !g.bench) {
     const hitter = [...g.shades].sort(idCmp).find((s) =>
       (s.state === 'chase' || s.state === 'wander') && s.pushTicks === 0 &&
       within(s.pos, p.pos, t.shade_hit_radius) && Math.abs(s.pos[1] - p.pos[1]) <= RULES.shade_hit_height + EPS);
@@ -760,7 +795,8 @@ export function step(g, input = {}) {
     }
   }
 
-  // 10. Sinh theo lịch (thực thể mới chỉ tương tác từ tick sau)
+  // 10. Sinh theo lịch (thực thể mới chỉ tương tác từ tick sau). Bench: không sinh thêm, không kết thúc Đêm.
+  if (g.bench) return events;
   const st = g.simTick;
   if (g.randomMotes && st % RULES.mote_spawn_ticks === 0 && g.motes.length < RULES.mote_cap) spawnRandomMote(g);
   if (g.randomShades) {
