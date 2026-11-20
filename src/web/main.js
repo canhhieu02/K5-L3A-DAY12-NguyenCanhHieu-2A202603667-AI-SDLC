@@ -44,6 +44,20 @@ let settingsFrom = null;
 function show(id) {
   for (const s of document.querySelectorAll('.screen')) s.classList.toggle('hidden', s.id !== id);
   $('hud').classList.toggle('hidden', !(mode === 'play'));
+  // Nút vừa bấm vẫn giữ focus: Space (nhảy) sẽ "bấm" lại nó (vd. Tiếp tục → tạm dừng lại). Bỏ focus khi vào chơi.
+  if (mode === 'play' && !id) { document.activeElement?.blur?.(); keys.clear(); }
+}
+
+// Chế độ thử (bật trong Cài đặt): chọn Đêm ở menu, "Qua Đêm" trong menu tạm dừng. Chỉ ở web, không tính điểm.
+function applyDevMode() {
+  for (const el of document.querySelectorAll('.dev-only')) el.classList.toggle('hidden', !settings.devMode);
+}
+
+function skipNight() {
+  if (night < 3) { startNight(night + 1); return; }
+  mode = 'dawn';
+  $('dawn-score').textContent = `Tổng điểm: ${Object.values(wonScores).reduce((a, b) => a + b, 0)} (có Đêm qua bằng chế độ thử)`;
+  show('scr-dawn');
 }
 
 function startNight(n, intro = true) {
@@ -93,7 +107,8 @@ function finishNight() {
 
 // ---------- nút trên các màn hình ----------
 document.addEventListener('click', (e) => {
-  const act = e.target.closest?.('button')?.dataset.act;
+  const btn = e.target.closest?.('button');
+  const act = btn?.dataset.act;
   if (!act) return;
   audio.ensure();
   audio.play('click');
@@ -104,6 +119,8 @@ document.addEventListener('click', (e) => {
     case 'retry': startNight(night); break;
     case 'resume': pauseQueued = true; break;
     case 'restart': startNight(night, false); break;
+    case 'skip': skipNight(); break;
+    case 'goto': wonScores = {}; audio.startMusic(); startNight(Number(btn.dataset.night)); break;
     case 'menu': mode = 'menu'; game = null; audio.stopMusic(); show('scr-menu'); break;
     case 'settings': settingsFrom = document.querySelector('.screen:not(.hidden)')?.id; openSettings(); break;
     case 'settings-back': show(settingsFrom); settingsFrom = null; break;
@@ -114,23 +131,36 @@ function openSettings() {
   $('set-volume').value = settings.volume;
   $('set-sens').value = settings.sensitivity;
   $('set-fps').checked = settings.showFps;
+  $('set-dev').checked = settings.devMode;
   for (const s of document.querySelectorAll('.screen')) s.classList.toggle('hidden', s.id !== 'scr-settings');
 }
 $('set-volume').addEventListener('input', (e) => { settings.volume = Number(e.target.value); audio.setVolume(settings.volume); saveSettings(settings); });
 $('set-sens').addEventListener('input', (e) => { settings.sensitivity = Number(e.target.value); saveSettings(settings); });
 $('set-fps').addEventListener('change', (e) => { settings.showFps = e.target.checked; saveSettings(settings); });
+$('set-dev').addEventListener('change', (e) => { settings.devMode = e.target.checked; saveSettings(settings); applyDevMode(); });
 
 // ---------- input ----------
 const keys = new Set();
 let camYaw = 180; // độ; 0 = camera ở phía +Z nhìn về −Z, 180 = ở phía −Z nhìn về +Z
 let pauseQueued = false;
+// Mã phím ổn định: dùng e.code; nếu bộ gõ (IME/Unikey) làm e.code rỗng hoặc lạ thì suy từ e.key.
+function keyCode(e) {
+  if (/^(Key[A-Z]|Arrow|Shift|Space|Escape|Enter)/.test(e.code)) return e.code;
+  const k = (e.key || '').toLowerCase();
+  if (/^[a-z]$/.test(k)) return `Key${k.toUpperCase()}`;
+  if (k === ' ') return 'Space';
+  return e.code || e.key;
+}
 addEventListener('keydown', (e) => {
-  if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
-  if ((e.code === 'Escape' || e.code === 'KeyP') && mode === 'play' && !settingsFrom && !e.repeat) pauseQueued = true;
-  keys.add(e.code);
-});
-addEventListener('keyup', (e) => keys.delete(e.code));
+  const code = keyCode(e);
+  // Khi đang chơi: không để Space/Enter/phím mũi tên kích hoạt nút đang focus hoặc cuộn trang
+  if (mode === 'play' && ['Space', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(code)) e.preventDefault();
+  if ((code === 'Escape' || code === 'KeyP') && mode === 'play' && !settingsFrom && !e.repeat) pauseQueued = true;
+  keys.add(code);
+}, { capture: true });
+addEventListener('keyup', (e) => { keys.delete(keyCode(e)); if (e.key === 'Shift') { keys.delete('ShiftLeft'); keys.delete('ShiftRight'); } }, { capture: true });
 addEventListener('blur', () => { keys.clear(); if (mode === 'play' && game?.state === 'playing') pauseQueued = true; });
+document.addEventListener('visibilitychange', () => { if (document.hidden) keys.clear(); });
 let dragging = false;
 renderer.domElement.addEventListener('mousedown', () => { dragging = true; });
 addEventListener('mouseup', () => { dragging = false; });
@@ -288,6 +318,7 @@ function frame(now) {
 }
 
 view.build(createGame({ seed: 1, night: 1 }).map); // cảnh nền cho menu
+applyDevMode();
 show('scr-menu');
 // ?night=N: vào thẳng Đêm N (dùng khi quay/chụp bằng chứng)
 const qNight = Number(new URLSearchParams(location.search).get('night'));

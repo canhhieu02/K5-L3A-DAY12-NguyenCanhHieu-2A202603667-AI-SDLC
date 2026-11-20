@@ -1,7 +1,7 @@
 // Cài đặt người chơi, lưu giữa các lần mở game (localStorage). Mọi truy cập bọc try/catch:
 // trình duyệt chặn bộ nhớ thì vẫn chơi được với giá trị mặc định.
 const KEY = 'dao-den-long.settings.v1';
-export const DEFAULTS = { volume: 0.7, sensitivity: 1, showFps: true };
+export const DEFAULTS = { volume: 0.7, sensitivity: 1, showFps: true, devMode: false };
 
 export function loadSettings() {
   try {
@@ -13,6 +13,7 @@ export function loadSettings() {
       volume: num(s.volume, 0, 1, DEFAULTS.volume),
       sensitivity: num(s.sensitivity, 0.2, 3, DEFAULTS.sensitivity),
       showFps: typeof s.showFps === 'boolean' ? s.showFps : DEFAULTS.showFps,
+      devMode: typeof s.devMode === 'boolean' ? s.devMode : DEFAULTS.devMode,
     };
   } catch {
     return { ...DEFAULTS };
