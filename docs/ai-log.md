@@ -46,7 +46,7 @@ Dùng gói **Claude Pro** (thuê bao, không trả theo token), nên Claude Code
 |---|---|---|---|---|
 | Sau khi tag `phase-1` | CP0 + Phase 1, 1 phiên Claude Code (Opus) | 32% | 11% | Chi phí tiền thêm: 0 (nằm trong gói) |
 | Sau khi tag `phase-2` | Phase 2: 1 cuộc hội thoại (bắt đầu bằng `/clear`), 8 bước + sửa theo phản hồi | _(người học điền)_ | _(người học điền)_ | Chi phí tiền thêm: 0 (nằm trong gói) |
-| Sau khi tag `phase-3` | Phase 3: 1 cuộc hội thoại (bắt đầu bằng `/clear`), dán TICKET-03 một lần; làm liền core → test → web → tài liệu → bằng chứng, rồi 2 lượt ảnh chơi tay | _(người học điền)_ | _(người học điền)_ | Chi phí tiền thêm: 0 (nằm trong gói) |
+| Sau khi tag `phase-3` | Phase 3: 1 cuộc hội thoại (bắt đầu bằng `/clear`), dán TICKET-03 một lần; làm liền core → test → web → tài liệu → bằng chứng, rồi 2 lượt ảnh chơi tay | 43% | 21% | Đo sau khi tag `phase-3` + ghi log (phiên 5 giờ còn 3h 2m, tuần còn 3d 20h). Chi phí tiền thêm: 0 (nằm trong gói) |
 
 Bảng *"What's contributing to your limits usage"* (24 giờ qua, ước tính):
 - 77%: *"Start fresh when you switch tasks"*. Cả CP0 và Phase 1 chạy trong **một** cuộc hội thoại dài, nên mỗi lượt gửi lại toàn bộ ngữ cảnh cũ.
