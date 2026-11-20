@@ -29,17 +29,35 @@ export const TUNING = {
   score: { per_mote: 10, per_lantern: 100, per_stun: 5, per_second_left: 2, per_flame_left: 50 },
 };
 
-// Hằng số thế giới không có trong contract (giả định, xem docs/assumptions.md).
-export const WORLD = {
-  island_radius: 40, // người chơi bị chặn ở mép đảo, không rơi
-  lantern_ring_radius: 20, // 5 đèn mặc định trên vòng tròn bán kính 20 m
+// Số chuẩn TICKET-02 không nằm trong `tuning` của contract (đơn vị tick khi tên có _ticks).
+export const RULES = {
   jump_velocity: 7, // m/s
   gravity: 20, // m/s^2
-  initial_motes: 25,
-  mote_min_active: 15, // nếu random_motes: cứ 5 s bổ sung 1 con khi còn < 15
-  mote_respawn_ticks: 300,
-  initial_shades: 2,
-  shade_max: 6, // nếu random_shades: cứ 30 s sinh thêm 1 con, tối đa 6
-  shade_spawn_ticks: 1800,
-  shade_spawn_y: 1.0,
+  pickup_height: 1.5, // chênh cao chân Mây – mặt đất đặt đom đóm/bùa
+  mote_initial: 20,
+  mote_cap: 30,
+  mote_spawn_ticks: 240,
+  drop_ttl_ticks: 480,
+  drop_ring: [1.5, 2.5],
+  pulse_center_h: 0.8,
+  pulse_knock_ticks: 15,
+  safe_push_ticks: 30,
+  shade_detect: 12,
+  shade_lose: 18,
+  shade_hit_height: 1.5,
+  shade_recoil_m: 2,
+  shade_recoil_ticks: 60,
+  shade_first_spawn_tick: 300,
+  shade_first_count: 2,
+  shade_spawn_min_dist: 15,
+  fall_y: -10,
+  respawn_wait_ticks: 60,
+  charm_speed: 7.2,
+  wind_speed: 2,
+  // Giả định (docs/assumptions.md)
+  shade_spawning_ticks: 60, // A2-10
+  shade_hover: 1.0, // A2-8: tâm Bóng Mực cao hơn mặt đất 1 m
+  shade_wander_speed: 2, // A2-9
+  wander_turn_ticks: 120, // A2-9
+  step_up: 0.3, // A2-28: dốc 0.5 → lướt 14 m/s lên ~0.12 m/tick; vách cao 3 m
 };

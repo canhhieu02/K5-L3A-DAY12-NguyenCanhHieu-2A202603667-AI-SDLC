@@ -38,16 +38,18 @@ Chạy hoàn toàn bằng Node, không cần cửa sổ/GPU; không cần `npm c
 
 ## Luật và cách tính điểm
 
-> **Phase 2 đang làm** ([docs/phases/phase-2.md](docs/phases/phase-2.md)): số liệu đã theo chuẩn TICKET-02 (contract v1.1). Các luật mới (lướt, rơi khỏi đảo, điểm khi nạp, Bóng Mực lùi sau khi chạm, 3 Đêm…) sẽ có ở các bước sau; mục này cập nhật khi xong.
+> **Phase 2 đang làm** ([docs/phases/phase-2.md](docs/phases/phase-2.md)): luật lõi và Đêm 1 đã theo chuẩn TICKET-02 (contract v1.1). Đêm 2/3, Gió Lạc, Bùa Gió, menu/HUD/âm thanh sẽ có ở các bước sau; mục này cập nhật khi xong. Phím tạm thời: **C/L** lướt, **P/Esc** tạm dừng.
 
 - Mang tối đa **10** đom đóm. Mỗi đèn cần **10** đom đóm để thắp. Thắp đủ **5** đèn → **thắng**.
-- Bóng Mực đuổi theo (4 m/s, chậm hơn Mây 6 m/s). Bị chạm: mất **1 ngọn lửa**, rơi **một nửa** số đom đóm đang mang (làm tròn xuống), bất tử 1.5 s. Hết **3** ngọn lửa → **thua**.
+- Bóng Mực xuất hiện từ giây thứ 5, đi lang thang và đuổi khi Mây trong 12 m (4 m/s). Bị chạm: mất **1 ngọn lửa**, **một nửa** số đom đóm đang mang rơi ra quanh Mây (nhặt lại được trong 8 s), bất tử 1.5 s; Bóng Mực lùi lại 2 m. Hết **3** ngọn lửa → **thua**.
+- Rơi khỏi đảo: mất 1 ngọn lửa và toàn bộ đom đóm, 1 s sau hồi sinh ở giữa đảo.
+- Lướt 14 m/s trong 0.2 s, hồi chiêu 1.5 s.
 - Bóng Mực không vào được vòng **6 m** quanh đèn **đã thắp**.
 - Đêm dài **300 s**; trời sáng mà chưa thắp hết đèn → **thua**.
 
 | Sự kiện | Điểm |
 |---|---|
-| Nhặt 1 đom đóm (Phase 2: chuyển sang tính khi nạp) | +10 |
+| Nạp 1 đom đóm vào đèn | +10 |
 | Thắp 1 đèn | +100 |
 | Tỏa Sáng trúng 1 Bóng Mực | +5 |
 | Khi thắng: mỗi giây còn lại (làm tròn xuống) | +2 |

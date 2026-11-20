@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Headless runner theo Test Contract v1.0 (mục B, E).
-// node src/headless/cli.js --seed <int> --night 1 [--scenario f.json] [--inputs f.json]
+// Headless runner theo Test Contract v1.1 (mục B, E của v1.0 + thay đổi TICKET-02 Phần 4).
+// node src/headless/cli.js --seed <int> --night <1|2|3> [--scenario f.json] [--inputs f.json]
 //                          --ticks <int> --out <file.jsonl> [--snapshot-every <int>]
 import fs from 'node:fs';
 import { createGame, step, snapshot } from '../core/world.js';
+import { SUPPORTED_NIGHTS } from '../core/maps.js';
 import { validateInputs, validateScenario } from '../core/validate.js';
 
 class CliError extends Error {
@@ -29,7 +30,8 @@ function parseArgs(argv) {
   for (const req of ['seed', 'night', 'ticks', 'out']) if (o[req] == null) throw new CliError(`thiếu --${req}`, 1);
   o.seed = int('--seed', o.seed, -Infinity);
   o.night = int('--night', o.night, 1);
-  if (o.night !== 1) throw new CliError('chỉ hỗ trợ --night 1', 1);
+  if (o.night > 3) throw new CliError('--night phải là 1, 2 hoặc 3', 1);
+  if (!SUPPORTED_NIGHTS.includes(o.night)) throw new CliError(`Đêm ${o.night} chưa được hỗ trợ`, 1);
   o.ticks = int('--ticks', o.ticks, 0);
   o.snapshotEvery = int('--snapshot-every', o.snapshotEvery, 1);
   return o;
@@ -49,24 +51,25 @@ export function run(argv) {
   const o = parseArgs(argv);
   const scenario = o.scenario ? readJson(o.scenario, validateScenario) : null;
   const inputs = o.inputs ? readJson(o.inputs, validateInputs) : { frames: [] };
-  if (scenario?.lanterns) {
-    for (const L of scenario.lanterns) {
-      if (!/^L[1-5]$/.test(L.id)) process.stderr.write(`cảnh báo: bỏ qua đèn không tồn tại ${L.id}\n`);
-    }
+  const g = createGame({ seed: o.seed, night: o.night, scenario });
+  for (const L of scenario?.lanterns || []) {
+    if (!g.lanterns.some((x) => x.id === L.id)) process.stderr.write(`cảnh báo: bỏ qua đèn không tồn tại ${L.id}\n`);
   }
 
-  const g = createGame({ seed: o.seed, scenario });
   const lines = [JSON.stringify(snapshot(g))];
-  const cur = { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false, dash: false };
+  const cur = { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false, dash: false, pause: false };
   const frames = inputs.frames;
   let fi = 0;
-  for (let k = 0; k < o.ticks && g.state === 'playing'; k++) {
+  const running = () => g.state === 'playing' || g.state === 'paused';
+  for (let k = 0; k < o.ticks && running(); k++) {
     while (fi < frames.length && frames[fi].tick === k) Object.assign(cur, frames[fi++]);
     while (fi < frames.length && frames[fi].tick < k) fi++;
     for (const ev of step(g, cur)) lines.push(JSON.stringify(ev));
-    if (g.steps % o.snapshotEvery === 0) lines.push(JSON.stringify(snapshot(g)));
+    if (g.tick % o.snapshotEvery === 0) lines.push(JSON.stringify(snapshot(g)));
   }
-  lines.push(JSON.stringify({ type: 'end', ticks: g.steps, state: g.state, score: g.score }));
+  // Dòng end chỉ có playing/won/lost (contract v1.0); đang tạm dừng ghi playing (A2-30).
+  const endState = g.state === 'paused' ? 'playing' : g.state;
+  lines.push(JSON.stringify({ type: 'end', ticks: g.tick, state: endState, score: g.score }));
   fs.writeFileSync(o.out, lines.join('\n') + '\n');
 }
 

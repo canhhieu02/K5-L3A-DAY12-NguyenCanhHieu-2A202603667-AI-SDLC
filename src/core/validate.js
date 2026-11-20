@@ -1,8 +1,11 @@
-// Kiểm tra định dạng file inputs/scenario (Test Contract v1.0 mục C, D).
+// Kiểm tra định dạng file inputs/scenario (Test Contract v1.0 mục C, D + v1.1).
 // Trả về chuỗi lỗi, hoặc null nếu hợp lệ.
+import { SHADE_STATES } from './world.js';
+
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 const isInt = (v) => Number.isInteger(v);
+const isNat = (v) => isInt(v) && v >= 0;
 const isVec3 = (v) => Array.isArray(v) && v.length === 3 && v.every(isNum);
 
 export function validateInputs(doc) {
@@ -12,7 +15,7 @@ export function validateInputs(doc) {
     const f = doc.frames[i];
     const at = `inputs.frames[${i}]`;
     if (!isObj(f)) return `${at}: phải là object`;
-    if (!isInt(f.tick) || f.tick < 0) return `${at}.tick: phải là số nguyên >= 0`;
+    if (!isNat(f.tick)) return `${at}.tick: phải là số nguyên >= 0`;
     if (f.tick <= last) return `${at}.tick: phải tăng nghiêm ngặt (${f.tick} <= ${last})`;
     last = f.tick;
     if ('move' in f) {
@@ -20,7 +23,7 @@ export function validateInputs(doc) {
         return `${at}.move: phải là [x, z] trong [-1, 1]`;
     }
     if ('cam_yaw_deg' in f && !isNum(f.cam_yaw_deg)) return `${at}.cam_yaw_deg: phải là số`;
-    for (const b of ['jump', 'interact', 'pulse', 'dash']) {
+    for (const b of ['jump', 'interact', 'pulse', 'dash', 'pause']) {
       if (b in f && typeof f[b] !== 'boolean') return `${at}.${b}: phải là boolean`;
     }
   }
@@ -33,10 +36,11 @@ export function validateScenario(doc) {
     const p = doc.player;
     if (!isObj(p)) return 'scenario.player: phải là object';
     if ('pos' in p && !isVec3(p.pos)) return 'scenario.player.pos: phải là [x, y, z]';
-    if ('carried' in p && !(isInt(p.carried) && p.carried >= 0)) return 'scenario.player.carried: số nguyên >= 0';
-    if ('flames' in p && !(isInt(p.flames) && p.flames >= 0)) return 'scenario.player.flames: số nguyên >= 0';
+    for (const k of ['carried', 'flames', 'invuln_ticks', 'dash_cd_ticks', 'pulse_cd_ticks', 'charm_ticks']) {
+      if (k in p && !isNat(p[k])) return `scenario.player.${k}: số nguyên >= 0`;
+    }
   }
-  for (const b of ['random_motes', 'random_shades']) {
+  for (const b of ['random_motes', 'random_shades', 'random_drifters', 'wind_enabled']) {
     if (b in doc && typeof doc[b] !== 'boolean') return `scenario.${b}: phải là boolean`;
   }
   if ('motes' in doc) {
@@ -46,12 +50,18 @@ export function validateScenario(doc) {
     if (!Array.isArray(doc.shades)) return 'scenario.shades: phải là mảng';
     const ids = new Set();
     for (const [i, s] of doc.shades.entries()) {
-      if (!isObj(s) || !isVec3(s.pos)) return `scenario.shades[${i}].pos: phải là [x, y, z]`;
+      const at = `scenario.shades[${i}]`;
+      if (!isObj(s) || !isVec3(s.pos)) return `${at}.pos: phải là [x, y, z]`;
       if ('id' in s) {
-        if (typeof s.id !== 'string' || ids.has(s.id)) return `scenario.shades[${i}].id: chuỗi, không trùng`;
+        if (typeof s.id !== 'string' || ids.has(s.id)) return `${at}.id: chuỗi, không trùng`;
         ids.add(s.id);
       }
+      if ('state' in s && !SHADE_STATES.includes(s.state)) return `${at}.state: một trong ${SHADE_STATES.join(', ')}`;
+      if ('state_ticks_left' in s && !isNat(s.state_ticks_left)) return `${at}.state_ticks_left: số nguyên >= 0`;
     }
+  }
+  for (const k of ['drifters', 'charms']) {
+    if (k in doc && (!Array.isArray(doc[k]) || !doc[k].every(isObj))) return `scenario.${k}: phải là mảng object`;
   }
   if ('lanterns' in doc) {
     if (!Array.isArray(doc.lanterns)) return 'scenario.lanterns: phải là mảng';
@@ -59,7 +69,7 @@ export function validateScenario(doc) {
       const at = `scenario.lanterns[${i}]`;
       if (!isObj(L) || typeof L.id !== 'string') return `${at}.id: bắt buộc, là chuỗi`;
       if ('pos' in L && !isVec3(L.pos)) return `${at}.pos: phải là [x, y, z]`;
-      if ('deposited' in L && !(isInt(L.deposited) && L.deposited >= 0)) return `${at}.deposited: số nguyên >= 0`;
+      if ('deposited' in L && !isNat(L.deposited)) return `${at}.deposited: số nguyên >= 0`;
       if ('lit' in L && typeof L.lit !== 'boolean') return `${at}.lit: phải là boolean`;
     }
   }

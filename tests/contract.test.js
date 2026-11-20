@@ -36,7 +36,9 @@ test('AC-02 output: snapshot tick 0 + mỗi N tick, dòng cuối là end', () =>
   assert.deepEqual(r.end, { type: 'end', ticks: 25, state: 'playing', score: 0 });
   const s0 = r.snaps[0];
   assert.equal(s0.time_left_s, T.night1_duration_s);
-  assert.deepEqual(s0.player, { pos: [0, 0, 0], flames: T.flames, carried: 0 });
+  // v1.1: player có thêm vel, grounded, invuln, dash_cd_s, pulse_cd_s, charm_s (P2-40)
+  assert.deepEqual(s0.player, { pos: [0, 0, 0], vel: [0, 0, 0], grounded: true, flames: T.flames, carried: 0,
+    invuln: false, dash_cd_s: 0, pulse_cd_s: 0, charm_s: 0 });
   assert.equal(s0.lanterns.length, 5);
   assert.equal(s0.sim_tick, 0);
 });
@@ -78,7 +80,7 @@ test('AC-08 nhặt đom đóm khi khoảng cách XZ <= pickup_radius, đúng tic
   assert.ok(hyp(snapAt(r, t).player.pos, [0, 0, 5]) <= T.pickup_radius);
   assert.ok(hyp(snapAt(r, t - 1).player.pos, [0, 0, 5]) > T.pickup_radius);
   assert.equal(snapAt(r, t).motes_active, 0);
-  assert.equal(snapAt(r, t).score, T.score.per_mote);
+  assert.equal(snapAt(r, t).score, 0); // v1.1: per_mote tính khi nạp, không tính khi nhặt (P2-29)
 });
 
 test('AC-09 không nhặt quá carry_capacity', () => {
@@ -100,7 +102,7 @@ test('AC-10 nạp đủ lantern_cost thì thắp đèn, cộng per_lantern', () 
   const s = snapAt(r, 1);
   assert.equal(s.lanterns.find((l) => l.id === 'L1').lit, true);
   assert.equal(s.player.carried, 0);
-  assert.equal(s.score, T.score.per_lantern);
+  assert.equal(s.score, T.lantern_cost * T.score.per_mote + T.score.per_lantern);
 });
 
 test('AC-11 nạp một phần; ngoài interact_radius thì không nạp; giữ nút không nạp lặp', () => {
@@ -130,7 +132,7 @@ test('AC-12 thắp đèn cuối cùng thì thắng (all_lit); đèn đặt sẵn
   });
   assert.deepEqual(ev(r, 'game_over')[0], { type: 'event', tick: 1, name: 'game_over', data: { result: 'won', reason: 'all_lit' } });
   const bonus = Math.floor(T.night1_duration_s - 1 / 60) * T.score.per_second_left + T.flames * T.score.per_flame_left;
-  assert.deepEqual(r.end, { type: 'end', ticks: 1, state: 'won', score: T.score.per_lantern + bonus });
+  assert.deepEqual(r.end, { type: 'end', ticks: 1, state: 'won', score: T.lantern_cost * T.score.per_mote + T.score.per_lantern + bonus });
   assert.equal(r.code, 0);
 });
 
@@ -167,13 +169,15 @@ test('AC-16 tỏa sáng: tốn pulse_cost, choáng + đẩy Bóng Mực trong pu
   const s1 = snapAt(r, 1);
   assert.equal(s1.player.carried, 1);
   assert.equal(s1.score, T.score.per_stun);
-  const sh = s1.shades.find((s) => s.id === 'S1');
-  assert.equal(sh.state, 'stunned');
-  assert.deepEqual(sh.pos, [3 + T.pulse_push_m, 1, 0]);
+  const S1 = (tick) => snapAt(r, tick).shades.find((s) => s.id === 'S1');
+  assert.equal(S1(1).state, 'stunned');
+  // v1.1: đẩy lùi tổng pulse_push_m trong 15 tick đầu (P2-20)
+  assert.deepEqual(S1(1).pos, [3 + T.pulse_push_m / 15, 1, 0].map((v) => Math.round(v * 1000) / 1000));
+  assert.deepEqual(S1(15).pos, [3 + T.pulse_push_m, 1, 0]);
   const stunTicks = Math.round(T.pulse_stun_s * 60);
-  assert.equal(snapAt(r, stunTicks).shades.find((s) => s.id === 'S1').state, 'stunned');
-  assert.deepEqual(snapAt(r, stunTicks).shades.find((s) => s.id === 'S1').pos, [3 + T.pulse_push_m, 1, 0]);
-  assert.notEqual(snapAt(r, stunTicks + 1).shades.find((s) => s.id === 'S1').state, 'stunned');
+  assert.equal(S1(stunTicks).state, 'stunned');
+  assert.deepEqual(S1(stunTicks).pos, [3 + T.pulse_push_m, 1, 0]);
+  assert.notEqual(S1(stunTicks + 1).state, 'stunned');
 });
 
 test('AC-17 tỏa sáng cần đủ ánh sáng và có hồi chiêu', () => {
@@ -196,19 +200,20 @@ test('AC-18 Bóng Mực không vào safe_radius của đèn đã thắp', () => 
   assert.equal(ev(r, 'player_hit').length, 0);
 });
 
-test('AC-23 đèn vừa thắp: Bóng Mực (kể cả đang choáng) trong safe_radius bị đẩy ra ngay tick đó', () => {
-  // Choáng S1 ở tick 1 (đẩy từ 1 m ra 5 m), rồi thắp L1 đặt cạnh nó ở tick 3.
+test('AC-23 đèn vừa thắp: Bóng Mực (kể cả đang choáng) trong safe_radius bị đẩy ra trong 30 tick (v1.1, P2-19)', () => {
+  // Choáng S1 ở tick 1 (đẩy lùi về +X), rồi thắp L1 ở phía -X của Mây ở tick 3.
+  const L = [-2, 0, 0];
   const r = runHeadless({
-    ticks: 5,
-    scenario: empty({ player: { carried: T.pulse_cost + 3 }, lanterns: [{ id: 'L1', pos: [2, 0, 0], deposited: T.lantern_cost - 3 }], shades: [{ id: 'S1', pos: [1, 0, 0] }] }),
+    ticks: 40,
+    scenario: empty({ player: { carried: T.pulse_cost + 3 }, lanterns: [{ id: 'L1', pos: L, deposited: T.lantern_cost - 3 }], shades: [{ id: 'S1', pos: [1, 0, 0] }] }),
     inputs: { frames: [{ tick: 0, pulse: true }, { tick: 2, interact: true }] },
   });
   assert.deepEqual(ev(r, 'lantern_lit')[0].tick, 3);
-  assert.deepEqual(snapAt(r, 2).shades[0].pos, [1 + T.pulse_push_m, 0, 0]);
-  assert.ok(hyp(snapAt(r, 2).shades[0].pos, [2, 0, 0]) < T.safe_radius); // trong vùng của L1 trước khi thắp
-  const s = snapAt(r, 3).shades[0];
+  assert.ok(hyp(snapAt(r, 3).shades[0].pos, L) < T.safe_radius); // đẩy dần, chưa ra ngay
+  const s = snapAt(r, 3 + 29).shades[0];
   assert.equal(s.state, 'stunned');
-  assert.ok(hyp(s.pos, [2, 0, 0]) >= T.safe_radius - 0.001, JSON.stringify(s.pos));
+  assert.ok(hyp(s.pos, L) >= T.safe_radius - 0.001, JSON.stringify(s.pos));
+  for (const sn of r.snaps.filter((x) => x.tick >= 32)) assert.ok(hyp(sn.shades[0].pos, L) >= T.safe_radius - 0.001);
 });
 
 test('AC-24 nạp: deposited không vượt lantern_cost, phần dư giữ lại; đầy thì không nhặt thêm', () => {
@@ -245,15 +250,17 @@ test('AC-19 tất định: cùng seed/scenario/inputs -> output giống hệt; k
   assert.equal(a.code, 0);
   assert.equal(a.text, b.text);
   assert.notEqual(a.text, c.text);
-  assert.equal(a.snaps[0].shades.length, 2);
-  assert.ok(a.snaps[0].motes_active > 0);
+  assert.equal(a.snaps[0].shades.length, 0); // v1.1: Bóng Mực sinh từ tick 300 (P2-30)
+  assert.equal(a.snaps[0].motes_active, 20);
 });
 
-test('AC-20 game mặc định sinh thêm Bóng Mực theo thời gian (shade_spawned)', () => {
-  const r = runHeadless({ seed: 5, ticks: 1800, every: 100, scenario: { player: { flames: 99 } } });
-  const sp = ev(r, 'shade_spawned');
-  assert.equal(sp.length, 1);
-  assert.equal(sp[0].data.id, 'S3');
+test('AC-20 game mặc định sinh thêm Bóng Mực theo lịch v1.1 (P2-30)', () => {
+  const r = runHeadless({ seed: 5, ticks: 1800, every: 10, scenario: { player: { flames: 99 } } });
+  const sp = ev(r, 'shade_spawned').map((e) => [e.tick, e.data.id]);
+  assert.deepEqual(sp, [[300, 'S1'], [300, 'S2'], [780, 'S3'], [1260, 'S4'], [1740, 'S5']]);
+  assert.equal(snapAt(r, 300).shades[0].state, 'spawning');
+  assert.notEqual(snapAt(r, 360).shades[0].state, 'spawning');
+  for (const s of snapAt(r, 300).shades) assert.ok(hyp(s.pos, [0, 0, 0]) >= 15);
 });
 
 test('AC-21 lỗi định dạng inputs/scenario -> mã thoát 2; thiếu tham số -> khác 0', () => {

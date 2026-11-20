@@ -15,6 +15,15 @@ Quy ước: `T.x` = khóa `tuning` trong `game.contract.json` (= `src/core/tunin
 7. Harness: `CLAUDE.md`/`AGENTS.md` + skill cho phạm vi mới.
 8. Bằng chứng: clone sạch, tất định, thời gian chạy một Đêm, ảnh web.
 
+## Tiến độ
+
+| Bước | Trạng thái | Test |
+|---|---|---|
+| 1 | Xong | — |
+| 2 | Xong | P2-01; AC-09/16/17/23/24 tham số hóa theo tuning |
+| 3 | Xong (Đêm 1 chuẩn hóa luôn vì lịch sinh gắn với điểm sinh) | `tests/phase2-core.test.js`: P2-03, 04, 11–17, 19–28, 31, 40–43, 84, 90, 91; test Phase 1 cập nhật theo luật mới: AC-02 (trường v1.1), AC-08/10/12 (điểm khi nạp), AC-16 (đẩy lùi 15 tick), AC-19/20 (lịch sinh), AC-23 (đẩy ra trong 30 tick) |
+| 4–8 | Chưa | |
+
 ## A. Số liệu chuẩn và contract (Phần 1, Phần 4)
 
 | ID | Khi … | Thì … | Kiểm chứng | Bước |
@@ -46,7 +55,7 @@ Số chuẩn khai trong `tuning`:
 | ID | Khi … | Thì … | Kiểm chứng | Bước |
 |---|---|---|---|---|
 | P2-10 | `move [0,1]` 60 tick trên đất | Đi đúng 6 m (đạt tốc độ trong ≤ 0.1 s, A2-1) | test | 3 |
-| P2-11 | Nhảy khi chạm đất / khi đang trên không | v₀ = 7 m/s, g = −20 m/s², đỉnh ≈ 1.225 m, tiếp đất sau 42 tick; trên không nhấn nhảy không có tác dụng | test | 3 |
+| P2-11 | Nhảy khi chạm đất / khi đang trên không | v₀ = 7 m/s, g = −20 m/s², đỉnh 1.225 m ở tick 21, tiếp đất ở tick 42 (A2-31); trên không nhấn nhảy không có tác dụng | test | 3 |
 | P2-12 | `dash` (false→true) đang chạy theo hướng d | Event `dash {}`; 12 tick vận tốc ngang 14 m/s theo d (đi 2.8 m); lướt trên không giữ nguyên Y; vẫn bị Bóng Mực chạm | test | 3 |
 | P2-13 | `dash` khi đứng yên | Lướt theo hướng đang quay mặt (đầu Đêm: +Z) | test | 3 |
 | P2-14 | `dash` lại trước 90 tick kể từ lúc bắt đầu lướt trước | Không lướt, không event; `player.dash_cd_s` giảm dần về 0 | test | 3 |

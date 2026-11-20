@@ -8,12 +8,12 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ddl-'));
 let n = 0;
 
 // Chạy CLI headless thật (đúng như máy chấm), trả về { code, stderr, lines, events, snaps, end }.
-export function runHeadless({ seed = 1, ticks = 60, scenario, inputs, every = 1, extra = [], rawArgs } = {}) {
+export function runHeadless({ seed = 1, night = 1, ticks = 60, scenario, inputs, every = 1, extra = [], rawArgs } = {}) {
   const id = n++;
   const out = path.join(tmp, `out${id}.jsonl`);
   let args = rawArgs;
   if (!args) {
-    args = ['--seed', String(seed), '--night', '1', '--ticks', String(ticks), '--out', out, '--snapshot-every', String(every)];
+    args = ['--seed', String(seed), '--night', String(night), '--ticks', String(ticks), '--out', out, '--snapshot-every', String(every)];
     if (scenario !== undefined) {
       const f = path.join(tmp, `sc${id}.json`);
       fs.writeFileSync(f, typeof scenario === 'string' ? scenario : JSON.stringify(scenario));

@@ -1,7 +1,10 @@
 // Lớp hiển thị: chỉ đọc state từ core và vẽ. Mọi luật game nằm trong src/core (chung với headless).
 import * as THREE from 'three';
 import { createGame, step, timeLeft, TICK_DT } from '../core/world.js';
-import { TUNING, WORLD } from '../core/tuning.js';
+import { TUNING } from '../core/tuning.js';
+import { getMap } from '../core/maps.js';
+
+const WORLD = { island_radius: getMap(1).radius }; // bước 6: dựng cảnh theo map của từng Đêm
 
 // ---------- renderer / scene ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -123,6 +126,8 @@ function readInput() {
     jump: k('Space'),
     interact: k('KeyF'),
     pulse: k('ShiftLeft', 'ShiftRight', 'KeyJ'),
+    dash: k('KeyC', 'KeyL'),
+    pause: k('KeyP', 'Escape'),
   };
 }
 
@@ -228,9 +233,11 @@ function render(time) {
     `Đèn đã thắp: ${lit}/${TUNING.lantern_count_night1}<br>` +
     `Thời gian: ${mm}:${ss}<br>` +
     `Điểm: ${game.score}` +
-    (p.pulseCdTicks > 0 ? `<br>Tỏa sáng: hồi ${(p.pulseCdTicks / 60).toFixed(1)}s` : '');
+    (p.pulseCdTicks > 0 ? `<br>Tỏa sáng: hồi ${(p.pulseCdTicks / 60).toFixed(1)}s` : '') +
+    (p.dashCdTicks > 0 ? `<br>Lướt: hồi ${(p.dashCdTicks / 60).toFixed(1)}s` : '') +
+    (game.state === 'paused' ? '<br><b>TẠM DỪNG</b> (P / Esc để tiếp tục)' : '');
 
-  if (game.state !== 'playing') {
+  if (game.state === 'won' || game.state === 'lost') {
     banner.style.display = 'flex';
     document.getElementById('banner-title').textContent = game.state === 'won' ? 'Đảo đã sáng lại!' : 'Ánh sáng đã tắt…';
     document.getElementById('banner-sub').textContent = `Điểm: ${game.score}`;
