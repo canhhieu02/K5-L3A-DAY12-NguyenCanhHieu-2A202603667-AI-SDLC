@@ -19,5 +19,20 @@
 | Phase 1 | 1 | Lỗi AI: test AC-23 bản đầu đỏ **sai lý do** (đèn đặt ngoài interact_radius nên không thắp) | Đọc lại số liệu trước khi sửa code | Dời đèn, thêm assert trạng thái trước khi thắp để test chỉ đỏ đúng chỗ | |
 | Phase 1 | 1 | Lỗi AI: dùng `sed` đánh dấu cả 17 giả định "đã hỏi GV" trong khi chỉ hỏi 7 chủ đề | Tự rà kết quả lệnh | Sửa lại chỉ đánh dấu các dòng thực sự đã hỏi | |
 
+## Token / chi phí
+
+Dùng gói **Claude Pro** (thuê bao, không trả theo token), nên Claude Code không hiện số token hay số tiền chính xác. Số đo lấy từ bảng *Account & Usage* của tiện ích VS Code.
+
+| Mốc | Phạm vi | Hạn mức phiên (5 giờ) | Hạn mức tuần | Ghi chú |
+|---|---|---|---|---|
+| Sau khi tag `phase-1` | CP0 + Phase 1, 1 phiên Claude Code (Opus) | 32% | 11% | Chi phí tiền thêm: 0 (nằm trong gói) |
+
+Bảng *"What's contributing to your limits usage"* (24 giờ qua, ước tính):
+- 77%: *"Start fresh when you switch tasks"*. Cả CP0 và Phase 1 chạy trong **một** cuộc hội thoại dài, nên mỗi lượt gửi lại toàn bộ ngữ cảnh cũ.
+- 17%: ngữ cảnh lớn (file dài như PRD-0, test, world.js được đọc hoặc viết nhiều lần).
+- 11%: chưa compact trước khi tạm nghỉ.
+
+**Bài học cho Phase 2 trở đi:** chạy `/clear` khi sang phase mới (ngữ cảnh cần thiết đã nằm trong repo: CLAUDE.md, docs/phases, docs/assumptions.md); dùng `/compact` khi hội thoại dài; chỉ đưa ticket mới vào ngữ cảnh, không dán lại PRD cũ.
+
 ## Cách tiết kiệm token đã áp dụng
 - CLAUDE.md ngắn; chỉ đưa ticket của phase hiện tại vào ngữ cảnh.

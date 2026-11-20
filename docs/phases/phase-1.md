@@ -59,4 +59,4 @@ Mã AC khớp tên test trong [tests/contract.test.js](../../tests/contract.test
 - **Rủi ro với test ẩn:** các giả định A1-1 (tỏa sáng tốn đom đóm), A1-4 (chỉ đèn đã thắp có safe_radius), A1-6 (thưởng cuối trận chỉ khi thắng), A1-14 (thứ tự xử lý) có thể khác cách hiểu của người chấm.
 - **Lỗi AI và cách xử lý:** xem [docs/ai-log.md](../ai-log.md) (sai số số thực, code web vụng).
 - **Harness:** `CLAUDE.md` + test AC-01 tự chặn lệch giữa `game.contract.json` và tuning thật.
-- **Token/chi phí:** _(điền từ `/cost`)_
+- **Token/chi phí:** gói Claude Pro; sau Phase 1 dùng 32% hạn mức phiên 5 giờ, 11% hạn mức tuần. Chi tiết và bài học: [docs/ai-log.md](../ai-log.md#token--chi-phí)
