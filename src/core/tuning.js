@@ -1,16 +1,16 @@
 // Nguồn sự thật duy nhất cho các con số gameplay.
 // game.contract.json PHẢI khớp object này (có test kiểm tra: tests/contract.test.js).
-// Giá trị = số chuẩn TICKET-02 Phần 1 (docs/phases/ticket-02.md), contract v1.1.
+// Giá trị = số chuẩn TICKET-02 Phần 1 + TICKET-03 (docs/phases/ticket-03.md), contract v1.2.
 export const TUNING = {
   player_speed: 6,
-  carry_capacity: 10,
+  carry_capacity: 10, // sức chứa gốc; sức chứa thật = min(capacity_max, 10 + 2 × successful_lights) (TICKET-03 mục 4)
   lantern_cost: 10,
   lantern_count_night1: 5,
   pickup_radius: 1.0,
   interact_radius: 2.0,
   pulse_cost: 3,
   pulse_radius: 5,
-  night1_duration_s: 300,
+  night1_duration_s: 240,
   flames: 3,
   invuln_s: 1.5,
   hit_drop_ratio: 0.5,
@@ -24,9 +24,19 @@ export const TUNING = {
   dash_speed: 14,
   dash_duration_s: 0.2,
   dash_cooldown_s: 1.5,
-  night2_duration_s: 330,
-  night3_duration_s: 360,
-  score: { per_mote: 10, per_lantern: 100, per_stun: 5, per_second_left: 2, per_flame_left: 50 },
+  night2_duration_s: 270,
+  night3_duration_s: 300,
+  // TICKET-03 (contract v1.2)
+  fuel_max: 100,
+  fuel_decay_per_s: 1.0,
+  fuel_per_mote: 10,
+  relight_cost: 5,
+  win_ratio: 0.6,
+  drain_per_s: 5,
+  low_fuel_threshold: 30,
+  capacity_max: 20,
+  // Điểm TICKET-03 mục 5 (A3-1: tên khóa tự đặt; bỏ per_second_left vì "thưởng thời gian: bỏ")
+  score: { per_mote: 5, per_lantern: 100, per_relight: 40, per_stun: 5, per_stun_drain: 15, per_lantern_dawn: 50, per_flame_left: 50 },
 };
 
 // Số chuẩn TICKET-02 không nằm trong `tuning` của contract (đơn vị tick khi tên có _ticks).
@@ -71,6 +81,11 @@ export const RULES = {
   // Bùa Gió
   charm_ticks: 600,
   charm_respawn_ticks: 2700,
+  // Đèn cạn dầu (TICKET-03)
+  capacity_per_light: 2, // sức chứa +2 mỗi lần thắp thành công
+  drain_range: 2, // Bóng Mực cách đèn yếu ≤ 2 m (XZ) thì hút
+  drain_chase_range: 6, // đang hút mà Mây vào trong 6 m thì đuổi
+  drain_event_ticks: 60, // fuel_drain ghi mỗi 60 tick đang hút (A3-6)
   // Giả định (docs/assumptions.md)
   shade_spawning_ticks: 60, // A2-10
   shade_hover: 1.0, // A2-8: tâm Bóng Mực cao hơn mặt đất 1 m

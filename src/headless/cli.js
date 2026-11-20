@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Headless runner theo Test Contract v1.1 (mục B, E của v1.0 + thay đổi TICKET-02 Phần 4).
+// Headless runner theo Test Contract v1.2 (mục B, E của v1.0 + TICKET-02 Phần 4 + TICKET-03 mục 7).
 // node src/headless/cli.js --seed <int> --night <1|2|3> [--scenario f.json] [--inputs f.json]
 //                          --ticks <int> --out <file.jsonl> [--snapshot-every <int>]
 import fs from 'node:fs';

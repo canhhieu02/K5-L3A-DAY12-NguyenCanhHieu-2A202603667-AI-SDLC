@@ -1,4 +1,5 @@
 // Test theo tiêu chí nghiệm thu Phase 1 (docs/phases/phase-1.md). Mã AC-xx khớp bảng tiêu chí.
+// Test bị TICKET-03 thay luật đã cập nhật, lý do ghi trong docs/phases/phase-3.md mục "Test cũ thay đổi".
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -10,21 +11,24 @@ const hyp = (p, q) => Math.hypot(p[0] - q[0], p[2] - q[2]);
 
 test('AC-01 game.contract.json khớp tuning game đang dùng', () => {
   const c = JSON.parse(fs.readFileSync('game.contract.json', 'utf8'));
-  assert.equal(c.contract_version, '1.1');
+  assert.equal(c.contract_version, '1.2'); // P3-01: contract v1.2
   assert.deepEqual(c.tuning, T);
   for (const k of ['team', 'build_cmd', 'run_cmd', 'headless_cmd']) assert.ok(c[k]);
 });
 
-test('P2-01 tuning = số chuẩn TICKET-02 Phần 1 (contract v1.1)', () => {
+// P2-01 cập nhật thành P3-01: TICKET-03 đổi thời lượng 3 Đêm, thêm 8 khóa dầu/thắng/sức chứa, thay bảng điểm.
+test('P3-01 tuning = số chuẩn TICKET-02 + TICKET-03 (contract v1.2)', () => {
   assert.deepEqual(T, {
     player_speed: 6, carry_capacity: 10, lantern_cost: 10, lantern_count_night1: 5,
     pickup_radius: 1.0, interact_radius: 2.0, pulse_cost: 3, pulse_radius: 5,
-    night1_duration_s: 300, flames: 3, invuln_s: 1.5, hit_drop_ratio: 0.5,
+    night1_duration_s: 240, flames: 3, invuln_s: 1.5, hit_drop_ratio: 0.5,
     pulse_stun_s: 2, pulse_push_m: 4, pulse_cooldown_s: 3, safe_radius: 6,
     shade_speed: 4, shade_hit_radius: 1.0, fall_enabled: true,
     dash_speed: 14, dash_duration_s: 0.2, dash_cooldown_s: 1.5,
-    night2_duration_s: 330, night3_duration_s: 360,
-    score: { per_mote: 10, per_lantern: 100, per_stun: 5, per_second_left: 2, per_flame_left: 50 },
+    night2_duration_s: 270, night3_duration_s: 300,
+    fuel_max: 100, fuel_decay_per_s: 1.0, fuel_per_mote: 10, relight_cost: 5,
+    win_ratio: 0.6, drain_per_s: 5, low_fuel_threshold: 30, capacity_max: 20,
+    score: { per_mote: 5, per_lantern: 100, per_relight: 40, per_stun: 5, per_stun_drain: 15, per_lantern_dawn: 50, per_flame_left: 50 },
   });
 });
 
@@ -36,8 +40,8 @@ test('AC-02 output: snapshot tick 0 + mỗi N tick, dòng cuối là end', () =>
   assert.deepEqual(r.end, { type: 'end', ticks: 25, state: 'playing', score: 0 });
   const s0 = r.snaps[0];
   assert.equal(s0.time_left_s, T.night1_duration_s);
-  // v1.1: player có thêm vel, grounded, invuln, dash_cd_s, pulse_cd_s, charm_s (P2-40)
-  assert.deepEqual(s0.player, { pos: [0, 0, 0], vel: [0, 0, 0], grounded: true, flames: T.flames, carried: 0,
+  // v1.1: player có thêm vel, grounded, invuln, dash_cd_s, pulse_cd_s, charm_s (P2-40); v1.2 thêm capacity (P3-40)
+  assert.deepEqual(s0.player, { pos: [0, 0, 0], vel: [0, 0, 0], grounded: true, flames: T.flames, carried: 0, capacity: T.carry_capacity,
     invuln: false, dash_cd_s: 0, pulse_cd_s: 0, charm_s: 0 });
   assert.equal(s0.lanterns.length, 5);
   assert.equal(s0.sim_tick, 0);
@@ -45,7 +49,7 @@ test('AC-02 output: snapshot tick 0 + mỗi N tick, dòng cuối là end', () =>
 
 test('AC-03 mặc định --snapshot-every = 10 và time_left_s = duration - steps/60', () => {
   const r = runHeadless({ ticks: 120, scenario: empty(), every: 10 });
-  assert.equal(snapAt(r, 120).time_left_s, 298);
+  assert.equal(snapAt(r, 120).time_left_s, T.night1_duration_s - 2); // v1.2: Đêm 1 = 240 s
 });
 
 test('AC-04 di chuyển: move [0,1] trong 60 tick = player_speed mét theo +Z', () => {
@@ -98,7 +102,7 @@ test('AC-10 nạp đủ lantern_cost thì thắp đèn, cộng per_lantern', () 
     inputs: { frames: [{ tick: 0, interact: true }] },
   });
   assert.deepEqual(ev(r, 'deposit')[0], { type: 'event', tick: 1, name: 'deposit', data: { lantern_id: 'L1', amount: T.lantern_cost, deposited: T.lantern_cost } });
-  assert.deepEqual(ev(r, 'lantern_lit')[0].data, { lantern_id: 'L1' });
+  assert.deepEqual(ev(r, 'lantern_lit')[0].data, { lantern_id: 'L1', relight: false }); // v1.2: thêm relight
   const s = snapAt(r, 1);
   assert.equal(s.lanterns.find((l) => l.id === 'L1').lit, true);
   assert.equal(s.player.carried, 0);
@@ -123,16 +127,19 @@ test('AC-11 nạp một phần; ngoài interact_radius thì không nạp; giữ 
   assert.equal(ev(far, 'deposit').length, 0);
 });
 
-test('AC-12 thắp đèn cuối cùng thì thắng (all_lit); đèn đặt sẵn lit không cộng điểm', () => {
+// AC-12 cập nhật (TICKET-03 mục 3 [THAY THẾ]): thắp đèn cuối không còn thắng sớm (all_lit bỏ); thắng ở bình minh.
+test('AC-12 / P3-30 thắp đèn cuối KHÔNG kết thúc Đêm; bình minh đủ đèn thì thắng dawn_survived; đèn đặt sẵn lit không cộng điểm thắp', () => {
   const lit = ['L2', 'L3', 'L4', 'L5'].map((id) => ({ id, lit: true }));
   const r = runHeadless({
     ticks: 100,
-    scenario: empty({ player: { carried: T.lantern_cost }, lanterns: [{ id: 'L1', pos: [0, 0, 2] }, ...lit] }),
+    scenario: empty({ time_left_s: 1, player: { carried: T.lantern_cost }, lanterns: [{ id: 'L1', pos: [0, 0, 2] }, ...lit] }),
     inputs: { frames: [{ tick: 0, interact: true }] },
   });
-  assert.deepEqual(ev(r, 'game_over')[0], { type: 'event', tick: 1, name: 'game_over', data: { result: 'won', reason: 'all_lit' } });
-  const bonus = Math.floor(T.night1_duration_s - 1 / 60) * T.score.per_second_left + T.flames * T.score.per_flame_left;
-  assert.deepEqual(r.end, { type: 'end', ticks: 1, state: 'won', score: T.lantern_cost * T.score.per_mote + T.score.per_lantern + bonus });
+  assert.equal(ev(r, 'lantern_lit')[0].tick, 1);
+  assert.deepEqual(ev(r, 'game_over'), [{ type: 'event', tick: 60, name: 'game_over', data: { result: 'won', reason: 'dawn_survived' } }]);
+  // bình minh: 5 đèn × (50 + floor(fuel)) + 50 × Ngọn Lửa; L1 thắp ở tick 1 còn 100 − 59/60, đèn đặt sẵn còn 100 − 1
+  const dawn = 5 * T.score.per_lantern_dawn + 99 * 4 + Math.floor(100 - 59 / 60) + T.flames * T.score.per_flame_left;
+  assert.deepEqual(r.end, { type: 'end', ticks: 60, state: 'won', score: T.lantern_cost * T.score.per_mote + T.score.per_lantern + dawn });
   assert.equal(r.code, 0);
 });
 
@@ -229,17 +236,15 @@ test('AC-24 nạp: deposited không vượt lantern_cost, phần dư giữ lại
   assert.equal(snapAt(full, 1).motes_active, 1);
 });
 
-test('AC-25 cùng tick: event đứng trước snapshot; end là dòng cuối; thưởng thắng nằm trong snapshot + end', () => {
-  const lit = ['L2', 'L3', 'L4', 'L5'].map((id) => ({ id, lit: true }));
-  const r = runHeadless({
-    ticks: 30, every: 10,
-    scenario: empty({ player: { carried: T.lantern_cost }, lanterns: [{ id: 'L1', pos: [0, 0, 2] }, ...lit] }),
-    inputs: { frames: [{ tick: 9, interact: true }] },
-  });
+// AC-25 cập nhật (TICKET-03 mục 3): thắng chỉ xảy ra ở bình minh, nên dựng tick bình minh = 10 thay cho thắp đèn cuối.
+test('AC-25 cùng tick: event đứng trước snapshot; end là dòng cuối; thưởng bình minh nằm trong snapshot + end', () => {
+  const lit = ['L1', 'L2', 'L3'].map((id) => ({ id, lit: true }));
+  const r = runHeadless({ ticks: 30, every: 10, scenario: empty({ time_left_s: 10 / 60, lanterns: lit }) });
   const types = r.lines.map((l) => `${l.type}:${l.tick ?? ''}`);
-  assert.deepEqual(types.slice(-5), ['event:10', 'event:10', 'event:10', 'snapshot:10', 'end:']);
+  assert.deepEqual(types.slice(-3), ['event:10', 'snapshot:10', 'end:']);
   assert.equal(snapAt(r, 10).score, r.end.score);
   assert.equal(snapAt(r, 10).state, 'won');
+  assert.equal(r.end.score, 3 * (T.score.per_lantern_dawn + 99) + T.flames * T.score.per_flame_left);
 });
 
 test('AC-19 tất định: cùng seed/scenario/inputs -> output giống hệt; khác seed -> khác', () => {

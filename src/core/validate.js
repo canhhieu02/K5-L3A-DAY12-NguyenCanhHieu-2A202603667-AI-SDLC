@@ -1,4 +1,4 @@
-// Kiểm tra định dạng file inputs/scenario (Test Contract v1.0 mục C, D + v1.1).
+// Kiểm tra định dạng file inputs/scenario (Test Contract v1.0 mục C, D + v1.1 + v1.2).
 // Trả về chuỗi lỗi, hoặc null nếu hợp lệ.
 import { SHADE_STATES, DRIFTER_STATES } from './world.js';
 
@@ -36,7 +36,7 @@ export function validateScenario(doc) {
     const p = doc.player;
     if (!isObj(p)) return 'scenario.player: phải là object';
     if ('pos' in p && !isVec3(p.pos)) return 'scenario.player.pos: phải là [x, y, z]';
-    for (const k of ['carried', 'flames', 'invuln_ticks', 'dash_cd_ticks', 'pulse_cd_ticks', 'charm_ticks']) {
+    for (const k of ['carried', 'flames', 'invuln_ticks', 'dash_cd_ticks', 'pulse_cd_ticks', 'charm_ticks', 'successful_lights']) {
       if (k in p && !isNat(p[k])) return `scenario.player.${k}: số nguyên >= 0`;
     }
   }
@@ -58,6 +58,7 @@ export function validateScenario(doc) {
       }
       if ('state' in s && !SHADE_STATES.includes(s.state)) return `${at}.state: một trong ${SHADE_STATES.join(', ')}`;
       if ('state_ticks_left' in s && !isNat(s.state_ticks_left)) return `${at}.state_ticks_left: số nguyên >= 0`;
+      if ('target_lantern_id' in s && typeof s.target_lantern_id !== 'string') return `${at}.target_lantern_id: phải là chuỗi`;
     }
   }
   for (const k of ['drifters', 'charms']) {
@@ -90,6 +91,10 @@ export function validateScenario(doc) {
       if ('pos' in L && !isVec3(L.pos)) return `${at}.pos: phải là [x, y, z]`;
       if ('deposited' in L && !isNat(L.deposited)) return `${at}.deposited: số nguyên >= 0`;
       if ('lit' in L && typeof L.lit !== 'boolean') return `${at}.lit: phải là boolean`;
+      // v1.2 (A3-7): fuel trong [0, 100], ever_lit boolean, relit_count số nguyên >= 0
+      if ('fuel' in L && !(isNum(L.fuel) && L.fuel >= 0 && L.fuel <= 100)) return `${at}.fuel: số trong [0, 100]`;
+      if ('ever_lit' in L && typeof L.ever_lit !== 'boolean') return `${at}.ever_lit: phải là boolean`;
+      if ('relit_count' in L && !isNat(L.relit_count)) return `${at}.relit_count: số nguyên >= 0`;
     }
   }
   if ('time_left_s' in doc && !(isNum(doc.time_left_s) && doc.time_left_s >= 0)) return 'scenario.time_left_s: số >= 0';

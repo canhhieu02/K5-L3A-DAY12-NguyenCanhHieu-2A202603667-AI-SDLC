@@ -1,4 +1,5 @@
 // Test luật lõi Phase 2 (docs/phases/phase-2.md mục B, C, E4). Mã P2-xx khớp bảng tiêu chí.
+// Test bị TICKET-03 thay luật đã cập nhật, lý do ghi trong docs/phases/phase-3.md mục "Test cũ thay đổi".
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless, empty, snapAt, ev } from './helpers.js';
@@ -76,12 +77,15 @@ test('P2-16 mặc định 20 đom đóm trên 20 điểm sinh khác nhau; tick 2
   assert.equal(snapAt(r, 240).motes_active, 21);
 });
 
-test('P2-17 nạp: hai đèn cách đều chọn id nhỏ hơn; đèn đã sáng bị bỏ qua', () => {
+// P2-17 cập nhật (TICKET-03 mục 1 [THAY THẾ] "đèn đã sáng không nhận thêm"): đèn sáng chưa đầy dầu vẫn được chọn để châm.
+// Dầu hao ở bước 2 trước tương tác ở bước 5, nên đèn đặt sẵn fuel 100 còn 99.983 lúc bấm E → châm 1 đom đóm (A3-5).
+test('P2-17 / P3-12 tương tác: hai đèn cách đều chọn id nhỏ hơn; đèn sáng chưa đầy dầu được châm', () => {
   const sc = (lit) => empty({ player: { carried: 3 }, lanterns: [{ id: 'L3', pos: [1, 0, 0] }, { id: 'L2', pos: [-1, 0, 0], lit }] });
   const a = runHeadless({ ticks: 1, scenario: sc(false), inputs: { frames: [{ tick: 0, interact: true }] } });
   assert.equal(ev(a, 'deposit')[0].data.lantern_id, 'L2');
   const b = runHeadless({ ticks: 1, scenario: sc(true), inputs: { frames: [{ tick: 0, interact: true }] } });
-  assert.equal(ev(b, 'deposit')[0].data.lantern_id, 'L3');
+  assert.deepEqual(ev(b, 'refuel')[0].data, { lantern_id: 'L2', amount: 1, fuel: 100 });
+  assert.equal(ev(b, 'deposit').length, 0);
 });
 
 test('P2-19 đèn vừa thắp: Bóng Mực trong vùng bị đẩy ra trong 30 tick, không gây hit lúc đó', () => {
@@ -192,19 +196,22 @@ test('P2-27 rơi khi còn 1 Ngọn Lửa: thua no_flames ngay tick đó', () => 
   assert.equal(r.end.ticks, hit.tick);
 });
 
-test('P2-28 cùng tick: hết Ngọn Lửa thắng thế thắp đèn cuối; thắp đúng tick hết giờ vẫn thắng', () => {
-  const lit = ['L2', 'L3', 'L4', 'L5'].map((id) => ({ id, lit: true }));
-  // Đủ đèn nhưng hết Ngọn Lửa → thua. (Bóng Mực không thể chạm cùng tick thắp đèn cuối:
-  // Mây trong 2 m của đèn nên bóng chạm được đều nằm trong vùng 6 m, đang bị đẩy ra — P2-19.)
+// P2-28 cập nhật (TICKET-03 mục 3): bỏ thắng all_lit; ưu tiên no_flames giữ nguyên, kể cả ở tick bình minh.
+test('P2-28 / P3-33 hết Ngọn Lửa luôn thua trước (kể cả tick bình minh, đủ đèn); thắp đèn thứ 3 đúng tick bình minh vẫn thắng', () => {
+  const lit = ['L2', 'L3'].map((id) => ({ id, lit: true }));
   const a = runHeadless({ ticks: 5, scenario: empty({ player: { flames: 0 }, lanterns: [{ id: 'L1', lit: true }, ...lit] }) });
   assert.deepEqual(ev(a, 'game_over')[0], { type: 'event', tick: 1, name: 'game_over', data: { result: 'lost', reason: 'no_flames' } });
+  // bị Bóng Mực đánh mất Ngọn Lửa cuối đúng tick bình minh, dù đủ 3 đèn sáng → no_flames
+  const b = runHeadless({ ticks: 100, scenario: empty({ time_left_s: 1, player: { flames: 1, invuln_ticks: 60 }, lanterns: [{ id: 'L1', lit: true }, ...lit], shades: [{ id: 'S1', pos: [0.5, 1, 0] }] }) });
+  assert.deepEqual(ev(b, 'game_over'), [{ type: 'event', tick: 60, name: 'game_over', data: { result: 'lost', reason: 'no_flames' } }]);
   const c = runHeadless({
     ticks: 100,
     scenario: empty({ time_left_s: 1, player: { carried: T.lantern_cost }, lanterns: [{ id: 'L1', pos: [0, 0, 1] }, ...lit] }),
     inputs: { frames: [{ tick: 59, interact: true }] },
   });
-  assert.deepEqual(ev(c, 'game_over')[0], { type: 'event', tick: 60, name: 'game_over', data: { result: 'won', reason: 'all_lit' } });
-  assert.equal(c.end.score, T.lantern_cost * T.score.per_mote + T.score.per_lantern + T.flames * T.score.per_flame_left);
+  assert.deepEqual(ev(c, 'game_over')[0], { type: 'event', tick: 60, name: 'game_over', data: { result: 'won', reason: 'dawn_survived' } });
+  // L1 vừa thắp còn 100; L2, L3 đặt sẵn còn 99
+  assert.equal(c.end.score, T.lantern_cost * T.score.per_mote + T.score.per_lantern + 3 * T.score.per_lantern_dawn + 100 + 99 + 99 + T.flames * T.score.per_flame_left);
 });
 
 test('P2-31 thứ tự trong tick: nhặt (bước 4) trước nạp (bước 5)', () => {
@@ -244,11 +251,12 @@ test('P2-41 scenario v1.1: invuln_ticks, pulse_cd_ticks, dash_cd_ticks, charm_ti
   }
 });
 
-test('P2-42 trạng thái Bóng Mực chỉ thuộc spawning/wander/chase/recoil/stunned', () => {
+// P2-42 cập nhật (contract v1.2): thêm trạng thái drain.
+test('P2-42 / P3-41 trạng thái Bóng Mực chỉ thuộc spawning/wander/chase/recoil/stunned/drain', () => {
   const r = runHeadless({ seed: 3, ticks: 3000, every: 10, scenario: { player: { flames: 99, carried: 10 } },
     inputs: { frames: [{ tick: 0, move: [0.4, 0.2] }, { tick: 400, pulse: true }, { tick: 401, pulse: false }, { tick: 900, move: [-0.5, 0] }] } });
   const states = new Set(r.snaps.flatMap((s) => s.shades.map((x) => x.state)));
-  for (const st of states) assert.ok(['spawning', 'wander', 'chase', 'recoil', 'stunned'].includes(st), st);
+  for (const st of states) assert.ok(['spawning', 'wander', 'chase', 'recoil', 'stunned', 'drain'].includes(st), st);
   assert.ok(states.has('spawning') && states.has('chase'));
 });
 
@@ -264,7 +272,8 @@ test('P2-90 / P2-91 tạm dừng: tick tăng, sim_tick và thời gian đứng y
   assert.deepEqual(ev(r, 'paused').map((e) => e.tick), [11]);
   assert.deepEqual(ev(r, 'resumed').map((e) => e.tick), [21]);
   const s15 = snapAt(r, 15);
-  assert.deepEqual([s15.state, s15.sim_tick, s15.time_left_s, s15.player.pos], ['paused', 10, 299.833, [0, 0, 1]]);
+  // v1.2: Đêm 1 = 240 s (trước đây 299.833 với 300 s)
+  assert.deepEqual([s15.state, s15.sim_tick, s15.time_left_s, s15.player.pos], ['paused', 10, Math.round((T.night1_duration_s - 10 / 60) * 1000) / 1000, [0, 0, 1]]);
   assert.deepEqual([snapAt(r, 21).state, snapAt(r, 21).sim_tick, snapAt(r, 21).player.pos], ['playing', 11, [0, 0, 1.1]]);
   const stay = runHeadless({ ticks: 20, scenario: empty(), inputs: { frames: [{ tick: 5, pause: true }] } });
   assert.deepEqual(stay.end, { type: 'end', ticks: 20, state: 'playing', score: 0 });
