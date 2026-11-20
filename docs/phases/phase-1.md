@@ -38,4 +38,9 @@ Mã AC khớp tên test trong [tests/contract.test.js](../../tests/contract.test
 4. Web Three.js chỉ đọc state từ core.
 
 ## Đánh giá cuối phase
-_(cập nhật trước khi tag)_
+- **Đạt (có bằng chứng):** AC-01…AC-21 (`npm test` 21/21), scenario nhặt-nạp-thắp khớp kỳ vọng, tất định, clone sạch.
+- **Chưa kiểm chứng:** AC-22 chơi web trọn ván (cần ảnh/clip); chưa chạy trực tiếp trên macOS/Linux.
+- **Rủi ro với test ẩn:** các giả định A1-1 (tỏa sáng tốn đom đóm), A1-4 (chỉ đèn đã thắp có safe_radius), A1-6 (thưởng cuối trận chỉ khi thắng), A1-14 (thứ tự xử lý) có thể khác cách hiểu của người chấm.
+- **Lỗi AI và cách xử lý:** xem [docs/ai-log.md](../ai-log.md) (sai số số thực, code web vụng).
+- **Harness:** `CLAUDE.md` + test AC-01 tự chặn lệch giữa `game.contract.json` và tuning thật.
+- **Token/chi phí:** _(điền từ `/cost`)_
