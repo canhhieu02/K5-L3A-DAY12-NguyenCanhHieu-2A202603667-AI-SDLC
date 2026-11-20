@@ -80,6 +80,10 @@ export function createAudio(initialVolume = 0.7) {
     tick: () => tone({ freq: 1200, dur: 0.06, type: 'square', gain: 0.1 }),
     wind: () => noise({ dur: 2.2, gain: 0.18, freq: 500, sweep: 900, q: 0.5 }),
     click: () => tone({ freq: 700, dur: 0.05, type: 'triangle', gain: 0.1 }),
+    // Phase 3: châm dầu (giọt dầu rơi), đèn tắt (ngọn lửa phụt), Bóng Mực đang hút
+    refuel: () => { tone({ freq: 660, dur: 0.1, type: 'sine', gain: 0.14, slide: -200 }); tone({ freq: 880, dur: 0.12, type: 'sine', gain: 0.1, delay: 0.06 }); },
+    out: () => { noise({ dur: 0.5, gain: 0.16, freq: 900, sweep: -700, q: 0.6 }); tone({ freq: 330, dur: 0.5, type: 'triangle', gain: 0.14, slide: -200, delay: 0.05 }); },
+    drain: () => tone({ freq: 90, dur: 0.4, type: 'sawtooth', gain: 0.06, slide: 30 }),
   };
 
   // Nhạc nền đêm: nốt ngũ cung chậm trên nền âm trầm, lặp theo nhịp.

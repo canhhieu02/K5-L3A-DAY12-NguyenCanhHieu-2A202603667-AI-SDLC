@@ -1,7 +1,8 @@
 // Dựng cảnh 3D cho một Đêm từ map của core và đồng bộ thực thể theo state. Chỉ hiển thị, không có luật game.
 import * as THREE from 'three';
 import { TUNING } from '../core/tuning.js';
-import { PALETTE as C, ambientIntensity } from './palette.js';
+import { FUEL_UNIT, hasSafeZone } from '../core/world.js';
+import { PALETTE as C, ambientIntensity, paletteFor, blinkOn } from './palette.js';
 
 const lambert = (color, extra = {}) => new THREE.MeshLambertMaterial({ color, ...extra });
 
@@ -36,6 +37,22 @@ export class WorldView {
     this.buildMay();
     this.buildPulseRing();
     this.buildLeaves();
+    // vết rách giấy đèn tắt (TICKET-03 mục 6): mảnh tối hình răng cưa, dùng chung
+    const tear = new THREE.Shape();
+    [[0, 0.22], [0.07, 0.06], [0.16, 0.1], [0.06, -0.04], [0.12, -0.2], [-0.02, -0.08], [-0.13, -0.16], [-0.06, 0.02], [-0.15, 0.12]]
+      .forEach(([x, y], i) => (i ? tear.lineTo(x, y) : tear.moveTo(x, y)));
+    this.shared.tearGeo = new THREE.ShapeGeometry(tear);
+    this.shared.tearMat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
+    this.shared.barGeo = new THREE.PlaneGeometry(1.4, 0.16);
+    this.setColorblind(false);
+  }
+
+  /** Bảng màu dễ phân biệt: chỉ viền + mắt Bóng Mực đổi màu (#00B3FF). */
+  setColorblind(on) {
+    const P = paletteFor(on);
+    this.shared.shadeRimMat.color.setHex(P.shadeRim);
+    this.shared.eyeMat.color.setHex(P.shadeRim);
+    this.dangerColor = P.uiDanger;
   }
 
   // ---------- Mây: áo #E8E2D0, khăn đỏ, nón lá, đèn lồng nhỏ ----------
@@ -181,8 +198,27 @@ export class WorldView {
     );
     safe.rotation.x = -Math.PI / 2;
     safe.position.y = 0.04;
-    g.add(post, lamp, core, light, safe);
-    g.userData = { lamp, core, light, safe };
+    // 3 vết rách quanh thân đèn: thấy từ mọi hướng khi đèn tắt
+    const tears = new THREE.Group();
+    for (let i = 0; i < 3; i++) {
+      const t = new THREE.Mesh(this.shared.tearGeo, this.shared.tearMat);
+      const a = (i * 2 * Math.PI) / 3 + 0.4;
+      t.position.set(Math.sin(a) * 0.56, (i - 1) * 0.12, Math.cos(a) * 0.56);
+      t.rotation.y = a;
+      t.scale.setScalar(1.7);
+      tears.add(t);
+    }
+    tears.position.y = 2.9;
+    // thanh dầu trên đèn đang sáng (quay về phía camera)
+    const bar = new THREE.Group();
+    bar.add(new THREE.Mesh(this.shared.barGeo, new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.6, depthWrite: false })));
+    const fillMat = new THREE.MeshBasicMaterial({ color: C.lanternLit });
+    const fill = new THREE.Mesh(this.shared.barGeo, fillMat);
+    fill.position.z = 0.01;
+    bar.add(fill);
+    bar.position.y = 3.85;
+    g.add(post, lamp, core, light, safe, tears, bar);
+    g.userData = { lamp, core, light, safe, tears, bar, fill };
     g.position.set(L.pos[0], L.pos[1], L.pos[2]);
     this.scene.add(g);
     return g;
@@ -242,6 +278,10 @@ export class WorldView {
       m.userData.rim.visible = !stunned;
       const k = e.state === 'spawning' ? Math.min(1, 1 - e.spawnTicks / 60) : stunned ? 0.8 : 1;
       m.scale.setScalar(Math.max(0.15, k));
+      if (e.state === 'drain') { // đang hút dầu: thân phập phồng, nghiêng về phía đèn
+        m.scale.setScalar(1 + Math.sin(time * 10) * 0.12);
+        m.lookAt(e.drainLantern.pos[0], e.pos[1], e.drainLantern.pos[2]);
+      }
     });
 
     this.sync(this.meshes.drifters, game.drifters.filter((d) => d.state !== 'removed'), () => {
@@ -276,15 +316,25 @@ export class WorldView {
     for (const L of game.lanterns) {
       let g = this.lanterns.get(L.id);
       if (!g) { g = this.makeLantern(L); this.lanterns.set(L.id, g); }
-      const { lamp, core, light, safe } = g.userData;
-      const fill = L.deposited / TUNING.lantern_cost;
+      const { lamp, core, light, safe, tears, bar, fill: fuelFill } = g.userData;
+      const fill = L.deposited / (L.everLit ? TUNING.relight_cost : TUNING.lantern_cost);
+      const fuel = L.fuelU / FUEL_UNIT;
+      const low = L.lit && fuel < TUNING.low_fuel_threshold;
+      const on = !low || blinkOn(time); // sắp hết dầu: đèn + thanh dầu nhấp nháy 1 Hz
       if (L.lit) lit++;
       lamp.material.color.setHex(L.lit ? C.lanternLit : C.lanternOff);
       lamp.material.emissive.setHex(L.lit ? C.lanternLit : 0x000000);
-      lamp.material.emissiveIntensity = L.lit ? 0.9 : 0;
-      core.material.opacity = L.lit ? 1 : fill * 0.7;
-      light.intensity = L.lit ? 40 : fill * 5;
-      safe.material.opacity = L.lit ? 0.3 : 0;
+      lamp.material.emissiveIntensity = L.lit ? (on ? 0.9 : 0.15) : 0;
+      lamp.scale.set(1, L.lit ? 1 : 0.8, 1); // đèn tắt xẹp 20% + giấy rách: phân biệt không cần màu
+      tears.visible = !L.lit;
+      core.material.opacity = L.lit ? (on ? 1 : 0.2) : fill * 0.7;
+      light.intensity = L.lit ? (on ? 40 * (0.4 + 0.6 * fuel / TUNING.fuel_max) : 6) : fill * 5;
+      safe.material.opacity = hasSafeZone(game, L) ? 0.3 : 0; // đèn yếu mất vùng an toàn
+      bar.visible = L.lit && on;
+      bar.quaternion.copy(this.camera.quaternion);
+      fuelFill.scale.x = Math.max(0.001, fuel / TUNING.fuel_max);
+      fuelFill.position.x = -0.7 * (1 - fuelFill.scale.x);
+      fuelFill.material.color.setHex(low ? this.dangerColor : C.lanternLit);
     }
     // Đảo sáng dần: ánh sáng môi trường theo công thức chuẩn
     this.hemi.intensity = ambientIntensity(lit, game.lanterns.length);

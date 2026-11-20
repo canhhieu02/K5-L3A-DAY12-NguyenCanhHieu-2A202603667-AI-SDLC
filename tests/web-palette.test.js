@@ -38,3 +38,36 @@ test('Kiến trúc: src/core không import three/DOM/Math.random/Date.now; web d
   const scene = fs.readFileSync('src/web/scene.js', 'utf8');
   assert.ok(scene.includes('ambientIntensity(lit, game.lanterns.length)'));
 });
+
+// ---------- Phase 3 (TICKET-03 mục 1 "Hiển thị", mục 6) ----------
+test('P3-60 bảng màu dễ phân biệt: viền/mắt Bóng Mực #00B3FF, cảnh báo UI #FFFFFF; còn lại giữ bảng chuẩn', async () => {
+  const { paletteFor, COLORBLIND } = await import('../src/web/palette.js');
+  assert.deepEqual(COLORBLIND, { shadeRim: 0x00b3ff, uiDanger: 0xffffff });
+  const cb = paletteFor(true);
+  assert.equal(cb.shadeRim, 0x00b3ff);
+  assert.equal(cb.uiDanger, 0xffffff);
+  assert.equal(cb.lanternLit, PALETTE.lanternLit);
+  assert.equal(paletteFor(false), PALETTE);
+  const doc = fs.readFileSync('docs/phases/ticket-03.md', 'utf8').toUpperCase();
+  for (const hex of ['#00B3FF', '#FFFFFF']) assert.ok(doc.includes(hex), hex);
+  // ⚠ đi kèm màu cảnh báo khi bật chế độ; scene đổi màu viền + mắt qua setColorblind
+  assert.ok(fs.readFileSync('index.html', 'utf8').includes('body.cb #hud-timer.danger::before'));
+  assert.ok(fs.readFileSync('src/web/scene.js', 'utf8').includes('this.shared.eyeMat.color.setHex(P.shadeRim)'));
+});
+
+test('P3-61 nhấp nháy chậm 1 Hz: sáng nửa đầu mỗi giây, tối nửa sau', async () => {
+  const { blinkOn } = await import('../src/web/palette.js');
+  assert.deepEqual([0, 0.25, 0.49, 0.5, 0.75, 1, 1.6, 7.2].map(blinkOn), [true, true, true, false, false, true, false, true]);
+});
+
+test('P3-62 cài đặt "Bảng màu dễ phân biệt" được lưu (mặc định tắt, giá trị sai kiểu → mặc định)', async () => {
+  const store = new Map();
+  globalThis.localStorage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) };
+  const { loadSettings, saveSettings } = await import('../src/web/settings.js');
+  assert.equal(loadSettings().colorblind, false);
+  saveSettings({ ...loadSettings(), colorblind: true });
+  assert.equal(loadSettings().colorblind, true);
+  store.set([...store.keys()][0], JSON.stringify({ colorblind: 'yes' }));
+  assert.equal(loadSettings().colorblind, false);
+  delete globalThis.localStorage;
+});

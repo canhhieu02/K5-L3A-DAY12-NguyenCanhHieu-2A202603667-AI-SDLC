@@ -19,12 +19,17 @@
       #hud-flames .off { opacity: 0.2; filter: grayscale(1); }
       #hud-timer { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font: 600 30px/1.2 ui-monospace, monospace; }
       #hud-timer.danger { color: var(--ui-danger); animation: blink 0.8s steps(2, start) infinite; }
+      /* Bảng màu dễ phân biệt: cảnh báo màu trắng kèm ⚠ (TICKET-03 mục 6) */
+      body.cb #hud-timer.danger::before, body.cb #hud-warn::before, body.cb #hud-lanterns.danger::before { content: "⚠ "; }
+      #hud-lanterns.danger { color: var(--ui-danger); }
+      #hud-warn { position: absolute; top: 100px; right: 16px; color: var(--ui-danger); font-size: 16px; font-weight: 600; }
+      #hud-carry { position: absolute; bottom: 46px; left: 50%; transform: translateX(-50%); font: 600 15px ui-monospace, monospace; color: var(--gold); }
       @keyframes blink { to { visibility: hidden; } }
       #hud-right { position: absolute; top: 14px; right: 16px; text-align: right; font-size: 18px; line-height: 1.5; }
       #hud-score { color: var(--gold); font-weight: 700; }
       #hud-night { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); font-size: 14px; opacity: 0.8; }
       #hud-bar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
-      #hud-bar span { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--gold); background: rgba(0,0,0,0.35); }
+      #hud-bar span { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--gold); background: rgba(0,0,0,0.35); }
       #hud-bar span.on { background: radial-gradient(#fff6c2, #ffe58a 60%, #f2c14e); box-shadow: 0 0 10px #ffe58a; }
       #hud-cds { position: absolute; bottom: 16px; right: 18px; display: flex; gap: 12px; }
       .cd { position: relative; width: 58px; height: 58px; border-radius: 12px; border: 2px solid var(--gold); overflow: hidden;
@@ -60,11 +65,13 @@
   <body>
     <div id="hud" class="hidden">
       <div id="hud-flames" class="panel"></div>
-      <div id="hud-timer" class="panel">05:00</div>
+      <div id="hud-timer" class="panel">04:00</div>
       <div id="hud-night"></div>
       <div id="hud-right" class="panel"><div id="hud-lanterns"></div><div id="hud-score"></div></div>
       <div id="hud-wind" class="panel hidden">🍃 Gió sắp nổi!</div>
       <div id="hud-prompt" class="panel hidden"></div>
+      <div id="hud-warn" class="panel hidden"></div>
+      <div id="hud-carry"></div>
       <div id="hud-bar"></div>
       <div id="hud-cds">
         <div class="cd" id="cd-dash"><b>⇧</b>Lướt<div class="shade"></div></div>
@@ -76,7 +83,7 @@
 
     <div id="scr-menu" class="screen">
       <h1>Đảo Đèn Lồng</h1>
-      <p>Ba hòn đảo giữa biển mây đã tắt đèn. Giúp Mây gom đom đóm, thắp lại Đèn Lồng Lớn trước bình minh.</p>
+      <p>Ba hòn đảo giữa biển mây đã tắt đèn. Giúp Mây gom đom đóm, thắp đèn và giữ đủ đèn còn sáng tới bình minh.</p>
       <div class="buttons">
         <button data-act="start">Bắt đầu</button>
         <button data-act="settings">Cài đặt</button>
@@ -88,7 +95,7 @@
       </div>
       <div class="keys">
         <kbd>W A S D</kbd> đi · <kbd>Chuột kéo</kbd> / <kbd>← →</kbd> xoay camera · <kbd>Space</kbd> nhảy · <kbd>Shift</kbd> lướt<br />
-        <kbd>E</kbd> nạp ánh sáng vào đèn · <kbd>F</kbd> Tỏa Sáng (3 đom đóm) · <kbd>Esc</kbd> / <kbd>P</kbd> tạm dừng
+        <kbd>E</kbd> thắp đèn / châm dầu · <kbd>F</kbd> Tỏa Sáng (3 đom đóm) · <kbd>Esc</kbd> / <kbd>P</kbd> tạm dừng
       </div>
     </div>
 
@@ -111,7 +118,7 @@
       <div class="buttons">
         <button data-act="resume">Tiếp tục</button>
         <button data-act="restart">Chơi lại Đêm</button>
-        <button data-act="win" class="dev-only hidden">🏆 Thắng Đêm này (chế độ thử)</button>
+        <button data-act="win" class="dev-only hidden">🏆 Thắng Đêm này (chế độ thử: thắp hết, tua tới bình minh)</button>
         <button data-act="skip" class="dev-only hidden">⏭ Qua Đêm (chế độ thử, không tính điểm)</button>
         <button data-act="settings">Cài đặt</button>
         <button data-act="menu">Về menu</button>
@@ -123,6 +130,7 @@
       <label>Âm lượng <input type="range" id="set-volume" min="0" max="1" step="0.05" /></label>
       <label>Độ nhạy chuột <input type="range" id="set-sens" min="0.2" max="3" step="0.1" /></label>
       <label>Hiện FPS <input type="checkbox" id="set-fps" /></label>
+      <label>Bảng màu dễ phân biệt <input type="checkbox" id="set-cb" /></label>
       <label>Chế độ thử (chọn Đêm, qua Đêm) <input type="checkbox" id="set-dev" /></label>
       <p style="font-size: 14px; opacity: 0.75">Phím di chuyển lúc ăn lúc không? Hãy tắt bộ gõ tiếng Việt (Unikey: Ctrl+Shift hoặc chuyển sang E).</p>
       <div class="buttons"><button data-act="settings-back">Xong</button></div>

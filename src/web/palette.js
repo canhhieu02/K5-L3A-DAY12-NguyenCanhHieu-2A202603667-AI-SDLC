@@ -24,6 +24,17 @@ export const PALETTE = {
   uiText: 0xf5f1e6,
 };
 
+// Chế độ "Bảng màu dễ phân biệt" (TICKET-03 mục 6): chỉ đổi viền/mắt Bóng Mực và màu cảnh báo UI.
+export const COLORBLIND = {
+  shadeRim: 0x00b3ff,
+  uiDanger: 0xffffff, // kèm biểu tượng ⚠ (thêm ở UI)
+};
+/** Bảng màu đang dùng: bảng chuẩn, hoặc bảng chuẩn ghi đè bởi COLORBLIND. */
+export const paletteFor = (colorblind) => (colorblind ? { ...PALETTE, ...COLORBLIND } : PALETTE);
+
+/** Nhấp nháy chậm 1 Hz cho đèn sắp hết dầu: sáng nửa giây, tối nửa giây. */
+export const blinkOn = (timeSec) => timeSec - Math.floor(timeSec) < 0.5;
+
 export const css = (hex) => `#${hex.toString(16).padStart(6, '0')}`;
 
 // Ánh sáng môi trường tăng theo tiến độ: 0.15 + 0.55 × (đèn sáng / tổng đèn).
