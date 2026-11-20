@@ -1,0 +1,15 @@
+# 2026-11-20T15:38:53+07:00 | commit base 9818fc1 | node v22.16.0 | MINGW64_NT-10.0-26200
+$ npm run build
+
+> dao-den-long@0.0.1 build
+> vite build
+
+vite v5.4.11 building for production...
+transforming...
+✓ 7 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  0.55 kB │ gzip:   0.41 kB
+dist/assets/index-Dau_RRPU.js  485.24 kB │ gzip: 122.74 kB
+✓ built in 1.21s
+exit=0

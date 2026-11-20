@@ -1,0 +1,7 @@
+# 2026-11-20T15:37:38+07:00 | commit base 9818fc1 | node v22.16.0 | MINGW64_NT-10.0-26200
+$ npm run headless -- --seed 7 --ticks 120 --dx 1 --dz -1   (lần 1)
+{"tick":120,"player":{"x":5.6569,"z":-5.6569}}
+$ npm run headless -- --seed 7 --ticks 120 --dx 1 --dz -1   (lần 2)
+{"tick":120,"player":{"x":5.6569,"z":-5.6569}}
+$ diff run1 run2
+GIỐNG NHAU (tất định)
