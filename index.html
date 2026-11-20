@@ -5,12 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đảo Đèn Lồng</title>
     <style>
-      html, body { margin: 0; height: 100%; overflow: hidden; background: #05060a; }
-      #hud { position: fixed; top: 8px; left: 8px; color: #ffd98a; font: 14px monospace; }
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #07040f; font-family: system-ui, sans-serif; }
+      #hud { position: fixed; top: 10px; left: 10px; color: #ffd98a; font: 15px/1.5 monospace;
+             background: rgba(10, 6, 24, 0.6); padding: 8px 12px; border-radius: 8px; pointer-events: none; }
+      #help { position: fixed; bottom: 10px; left: 10px; color: #cbb8ff; font: 13px monospace; opacity: 0.8; pointer-events: none; }
+      #banner { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column;
+                color: #ffe2a8; text-align: center; background: rgba(8, 4, 20, 0.55); pointer-events: none; }
+      #banner h1 { font-size: 48px; margin: 0 0 8px; }
+      #banner p { font-size: 18px; margin: 4px; }
     </style>
   </head>
   <body>
-    <div id="hud">WASD / mũi tên: di chuyển</div>
+    <div id="hud"></div>
+    <div id="help">WASD/mũi tên: đi · Chuột trái kéo / Q,E: xoay camera · Space: nhảy · F: nạp đèn · Shift/J: tỏa sáng · R: chơi lại</div>
+    <div id="banner"><h1 id="banner-title"></h1><p id="banner-sub"></p><p>Nhấn R để chơi lại</p></div>
     <script type="module" src="/src/web/main.js"></script>
   </body>
 </html>

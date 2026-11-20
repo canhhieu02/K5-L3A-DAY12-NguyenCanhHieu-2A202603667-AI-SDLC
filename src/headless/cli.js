@@ -1,19 +1,79 @@
 #!/usr/bin/env node
-// Headless runner — CP0 placeholder.
-// Định dạng input/output THẬT phải theo Test Contract của PRD-0; file này sẽ được viết lại.
-// Tạm thời: node src/headless/cli.js [--seed N] [--ticks N] [--dx N] [--dz N]
-import { createWorld, step, snapshot } from '../core/world.js';
+// Headless runner theo Test Contract v1.0 (mục B, E).
+// node src/headless/cli.js --seed <int> --night 1 [--scenario f.json] [--inputs f.json]
+//                          --ticks <int> --out <file.jsonl> [--snapshot-every <int>]
+import fs from 'node:fs';
+import { createGame, step, snapshot } from '../core/world.js';
+import { validateInputs, validateScenario } from '../core/validate.js';
 
-function parseArgs(argv) {
-  const opts = { seed: 1, ticks: 60, dx: 0, dz: 0 };
-  for (let i = 0; i < argv.length; i += 2) {
-    const key = argv[i]?.replace(/^--/, '');
-    if (key in opts) opts[key] = Number(argv[i + 1]);
-  }
-  return opts;
+class CliError extends Error {
+  constructor(msg, code) { super(msg); this.code = code; }
 }
 
-const opts = parseArgs(process.argv.slice(2));
-const world = createWorld(opts.seed);
-for (let i = 0; i < opts.ticks; i++) step(world, { dx: opts.dx, dz: opts.dz });
-process.stdout.write(JSON.stringify(snapshot(world)) + '\n');
+function parseArgs(argv) {
+  const o = { snapshotEvery: 10 };
+  const map = { '--seed': 'seed', '--night': 'night', '--scenario': 'scenario', '--inputs': 'inputs',
+    '--ticks': 'ticks', '--out': 'out', '--snapshot-every': 'snapshotEvery' };
+  for (let i = 0; i < argv.length; i++) {
+    const key = map[argv[i]];
+    if (!key) throw new CliError(`tham số không hợp lệ: ${argv[i]}`, 1);
+    if (i + 1 >= argv.length) throw new CliError(`thiếu giá trị cho ${argv[i]}`, 1);
+    o[key] = argv[++i];
+  }
+  const int = (name, v, min) => {
+    if (!/^-?\d+$/.test(String(v))) throw new CliError(`${name} phải là số nguyên`, 1);
+    const n = Number(v);
+    if (n < min) throw new CliError(`${name} phải >= ${min}`, 1);
+    return n;
+  };
+  for (const req of ['seed', 'night', 'ticks', 'out']) if (o[req] == null) throw new CliError(`thiếu --${req}`, 1);
+  o.seed = int('--seed', o.seed, -Infinity);
+  o.night = int('--night', o.night, 1);
+  if (o.night !== 1) throw new CliError('chỉ hỗ trợ --night 1', 1);
+  o.ticks = int('--ticks', o.ticks, 0);
+  o.snapshotEvery = int('--snapshot-every', o.snapshotEvery, 1);
+  return o;
+}
+
+function readJson(file, validate) {
+  let text;
+  try { text = fs.readFileSync(file, 'utf8'); } catch (e) { throw new CliError(`không đọc được ${file}: ${e.message}`, 1); }
+  let doc;
+  try { doc = JSON.parse(text); } catch (e) { throw new CliError(`${file}: JSON sai định dạng: ${e.message}`, 2); }
+  const err = validate(doc);
+  if (err) throw new CliError(`${file}: ${err}`, 2);
+  return doc;
+}
+
+export function run(argv) {
+  const o = parseArgs(argv);
+  const scenario = o.scenario ? readJson(o.scenario, validateScenario) : null;
+  const inputs = o.inputs ? readJson(o.inputs, validateInputs) : { frames: [] };
+  if (scenario?.lanterns) {
+    for (const L of scenario.lanterns) {
+      if (!/^L[1-5]$/.test(L.id)) process.stderr.write(`cảnh báo: bỏ qua đèn không tồn tại ${L.id}\n`);
+    }
+  }
+
+  const g = createGame({ seed: o.seed, scenario });
+  const lines = [JSON.stringify(snapshot(g))];
+  const cur = { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false, dash: false };
+  const frames = inputs.frames;
+  let fi = 0;
+  for (let k = 0; k < o.ticks && g.state === 'playing'; k++) {
+    while (fi < frames.length && frames[fi].tick === k) Object.assign(cur, frames[fi++]);
+    while (fi < frames.length && frames[fi].tick < k) fi++;
+    for (const ev of step(g, cur)) lines.push(JSON.stringify(ev));
+    if (g.steps % o.snapshotEvery === 0) lines.push(JSON.stringify(snapshot(g)));
+  }
+  lines.push(JSON.stringify({ type: 'end', ticks: g.steps, state: g.state, score: g.score }));
+  fs.writeFileSync(o.out, lines.join('\n') + '\n');
+}
+
+try {
+  run(process.argv.slice(2));
+  process.exitCode = 0;
+} catch (e) {
+  process.stderr.write(`lỗi: ${e.message}\n`);
+  process.exitCode = e instanceof CliError ? e.code : 1;
+}

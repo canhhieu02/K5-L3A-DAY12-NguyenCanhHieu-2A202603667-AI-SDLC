@@ -1,0 +1,59 @@
+# 2026-11-20T16:08:13+07:00 | node v22.16.0 | MINGW64_NT-10.0-26200
+$ npm test
+
+> dao-den-long@0.0.1 test
+> node --test "tests/*.test.js"
+
+TAP version 13
+# Subtest: AC-01 game.contract.json khớp tuning game đang dùng
+ok 1 - AC-01 game.contract.json khớp tuning game đang dùng
+# Subtest: AC-02 output: snapshot tick 0 + mỗi N tick, dòng cuối là end
+ok 2 - AC-02 output: snapshot tick 0 + mỗi N tick, dòng cuối là end
+# Subtest: AC-03 mặc định --snapshot-every = 10 và time_left_s = duration - steps/60
+ok 3 - AC-03 mặc định --snapshot-every = 10 và time_left_s = duration - steps/60
+# Subtest: AC-04 di chuyển: move [0,1] trong 60 tick = player_speed mét theo +Z
+ok 4 - AC-04 di chuyển: move [0,1] trong 60 tick = player_speed mét theo +Z
+# Subtest: AC-05 cam_yaw_deg 90: move [0,1] đi theo +X
+ok 5 - AC-05 cam_yaw_deg 90: move [0,1] đi theo +X
+# Subtest: AC-06 move dài hơn 1 được chuẩn hóa
+ok 6 - AC-06 move dài hơn 1 được chuẩn hóa
+# Subtest: AC-07 frame chỉ đổi trường có mặt; move giữ nguyên khi frame sau không có move
+ok 7 - AC-07 frame chỉ đổi trường có mặt; move giữ nguyên khi frame sau không có move
+# Subtest: AC-08 nhặt đom đóm khi khoảng cách XZ <= pickup_radius, đúng tick
+ok 8 - AC-08 nhặt đom đóm khi khoảng cách XZ <= pickup_radius, đúng tick
+# Subtest: AC-09 không nhặt quá carry_capacity
+ok 9 - AC-09 không nhặt quá carry_capacity
+# Subtest: AC-10 nạp đủ lantern_cost thì thắp đèn, cộng per_lantern
+ok 10 - AC-10 nạp đủ lantern_cost thì thắp đèn, cộng per_lantern
+# Subtest: AC-11 nạp một phần; ngoài interact_radius thì không nạp; giữ nút không nạp lặp
+ok 11 - AC-11 nạp một phần; ngoài interact_radius thì không nạp; giữ nút không nạp lặp
+# Subtest: AC-12 thắp đèn cuối cùng thì thắng (all_lit); đèn đặt sẵn lit không cộng điểm
+ok 12 - AC-12 thắp đèn cuối cùng thì thắng (all_lit); đèn đặt sẵn lit không cộng điểm
+# Subtest: AC-13 Bóng Mực đuổi theo và chạm thì mất 1 flame, rơi floor(carried*ratio); bất tử invuln_s
+ok 13 - AC-13 Bóng Mực đuổi theo và chạm thì mất 1 flame, rơi floor(carried*ratio); bất tử invuln_s
+# Subtest: AC-14 hết flames thì thua (no_flames)
+ok 14 - AC-14 hết flames thì thua (no_flames)
+# Subtest: AC-15 hết giờ thì thua (dawn)
+ok 15 - AC-15 hết giờ thì thua (dawn)
+# Subtest: AC-16 tỏa sáng: tốn pulse_cost, choáng + đẩy Bóng Mực trong pulse_radius, cộng per_stun
+ok 16 - AC-16 tỏa sáng: tốn pulse_cost, choáng + đẩy Bóng Mực trong pulse_radius, cộng per_stun
+# Subtest: AC-17 tỏa sáng cần đủ ánh sáng và có hồi chiêu
+ok 17 - AC-17 tỏa sáng cần đủ ánh sáng và có hồi chiêu
+# Subtest: AC-18 Bóng Mực không vào safe_radius của đèn đã thắp
+ok 18 - AC-18 Bóng Mực không vào safe_radius của đèn đã thắp
+# Subtest: AC-19 tất định: cùng seed/scenario/inputs -> output giống hệt; khác seed -> khác
+ok 19 - AC-19 tất định: cùng seed/scenario/inputs -> output giống hệt; khác seed -> khác
+# Subtest: AC-20 game mặc định sinh thêm Bóng Mực theo thời gian (shade_spawned)
+ok 20 - AC-20 game mặc định sinh thêm Bóng Mực theo thời gian (shade_spawned)
+# Subtest: AC-21 lỗi định dạng inputs/scenario -> mã thoát 2; thiếu tham số -> khác 0
+ok 21 - AC-21 lỗi định dạng inputs/scenario -> mã thoát 2; thiếu tham số -> khác 0
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2297.2233
+exit=0

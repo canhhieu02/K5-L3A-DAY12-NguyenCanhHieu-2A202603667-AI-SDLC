@@ -1,0 +1,11 @@
+# 2026-11-20T16:08:13+07:00 | node v22.16.0 | MINGW64_NT-10.0-26200
+run1 exit=0 sha256=361b04162fec0202 lines=71
+run2 exit=0 sha256=361b04162fec0202 lines=71
+GIỐNG HỆT NHAU (tất định)
+
+Sự kiện:
+{"type":"event","tick":479,"name":"player_hit","data":{"by":"shade","flames":2,"dropped":0}}
+{"type":"event","tick":569,"name":"player_hit","data":{"by":"shade","flames":1,"dropped":0}}
+{"type":"event","tick":659,"name":"player_hit","data":{"by":"shade","flames":0,"dropped":0}}
+{"type":"event","tick":659,"name":"game_over","data":{"result":"lost","reason":"no_flames"}}
+{"type":"end","ticks":659,"state":"lost","score":0}
