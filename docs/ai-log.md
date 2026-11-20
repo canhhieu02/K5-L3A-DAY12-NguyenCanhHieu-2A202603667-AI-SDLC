@@ -46,6 +46,7 @@ Dùng gói **Claude Pro** (thuê bao, không trả theo token), nên Claude Code
 |---|---|---|---|---|
 | Sau khi tag `phase-1` | CP0 + Phase 1, 1 phiên Claude Code (Opus) | 32% | 11% | Chi phí tiền thêm: 0 (nằm trong gói) |
 | Sau khi tag `phase-2` | Phase 2: 1 cuộc hội thoại (bắt đầu bằng `/clear`), 8 bước + sửa theo phản hồi | _(người học điền)_ | _(người học điền)_ | Chi phí tiền thêm: 0 (nằm trong gói) |
+| Sau khi tag `phase-3` | Phase 3: 1 cuộc hội thoại (bắt đầu bằng `/clear`), dán TICKET-03 một lần; làm liền core → test → web → tài liệu → bằng chứng, rồi 2 lượt ảnh chơi tay | _(người học điền)_ | _(người học điền)_ | Chi phí tiền thêm: 0 (nằm trong gói) |
 
 Bảng *"What's contributing to your limits usage"* (24 giờ qua, ước tính):
 - 77%: *"Start fresh when you switch tasks"*. Cả CP0 và Phase 1 chạy trong **một** cuộc hội thoại dài, nên mỗi lượt gửi lại toàn bộ ngữ cảnh cũ.
@@ -60,6 +61,14 @@ Bảng *"What's contributing to your limits usage"* (24 giờ qua, ước tính)
 - Tốn nhiều: đọc ảnh chụp màn hình (mỗi ảnh là một khối ngữ cảnh lớn), viết nguyên file lớn (`world.js`, `scene.js`, `main.js`, test).
 
 **Bài học cho Phase 3:** `/compact` (hoặc `/clear` + nhắc đọc `docs/phases/phase-N.md`) sau mỗi bước đã commit; chỉ xem ảnh khi thật cần; sửa bằng Edit nhỏ thay vì viết lại nguyên file.
+
+**Phase 3 — đã áp dụng / chưa áp dụng bài học:**
+- Đã: `/clear` trước khi dán TICKET-03; ngữ cảnh lấy từ repo (CLAUDE.md → AGENTS.md, phase-2.md, assumptions.md, skill `add-rule`). Lõi `world.js` sửa bằng **Edit nhỏ theo từng bước tick** (không viết lại nguyên file như Phase 2); test cũ sửa bằng thay thế chuỗi có kiểm tra, không chép lại file. Output lệnh lọc chỉ lấy `not ok` / tổng kết. Chỉ 4 lần AI tự xem ảnh (2 ảnh kiểm hiển thị dầu đèn + 2 ảnh sau khi sửa vết rách).
+- Chưa: vẫn **một** cuộc hội thoại dài từ ticket tới tag, không `/compact` giữa các commit (4 commit core/web/docs/bằng chứng là 4 điểm dừng tự nhiên).
+- Tốn nhiều: đọc trọn ~15 file lúc đầu để hiểu ảnh hưởng của change request (world.js, 6 file test, main.js, scene.js, docs Phase 2) — cần thiết vì ticket thay luật ở nhiều chỗ; 8 ảnh chơi tay người học dán vào (mỗi ảnh là một khối ngữ cảnh lớn); viết mới các tài liệu dài (ADR, CHANGELOG, phase-3.md).
+- Tiết kiệm được nhờ harness: skill `add-rule` có sẵn bẫy Phase 2 (Bùa Gió giữa cầu, dung sai, bộ đếm); `scripts/evidence.mjs` sinh toàn bộ bằng chứng bằng 1 lệnh; cảnh dựng sẵn `?demo=` giúp chụp ảnh chơi tay trong vài phút thay vì chơi trọn Đêm 4 phút.
+
+**Bài học cho Phase 4:** `/compact` ngay sau mỗi commit lớn; với change request, đọc `CHANGELOG.md` + ADR trước thay vì đọc lại toàn bộ test; người học gửi ảnh theo lô sau khi đã tự lọc ảnh đúng cảnh (đợt 2 có 2/4 ảnh chưa đúng cảnh phải giải thích lại).
 
 ## Cách tiết kiệm token đã áp dụng
 - CLAUDE.md ngắn (nay import AGENTS.md); chỉ đưa ticket của phase hiện tại vào ngữ cảnh.
