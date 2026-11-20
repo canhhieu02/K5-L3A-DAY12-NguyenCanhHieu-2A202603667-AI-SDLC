@@ -2,6 +2,14 @@
 
 Định dạng theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/). Phiên bản = phiên bản Test Contract.
 
+## [Chưa phát hành] — Đồ họa (sau tag `phase-4`)
+
+Chỉ lớp web; luật, bản đồ chuẩn (`groundAt`), `tuning`, đầu ra headless không đổi (115/115 test).
+
+- Mây dựng lại: mặt, tóc, má hồng, tay chân có khớp, áo + thắt lưng, nón lá có vành và nan, khăn đỏ bay, đèn lồng cầm tay; hoạt ảnh bước đi theo tốc độ, co chân khi nhảy, ngó quanh khi đứng yên.
+- `src/web/decor.js`: vách đá gồ ghề + chóp đá dưới đảo (mép trên khớp đúng bán kính chơi), thảm cỏ nhiều sắc (lệch < 10% màu cỏ chuẩn), núi xa nhô khỏi biển mây, mây bồng bềnh; cây theo Đêm (Đảo Bến cây tán tròn, Đảo Cau cây cau, Đảo Chuông cây thông), bụi, đá, khóm cỏ, hoa — đặt theo seed cố định, tránh đèn/điểm sinh/bục nhảy/bùa, không va chạm. Vẽ bằng InstancedMesh (ít draw call).
+- Cảnh bench không dựng phần trang trí này (TICKET-04: phần sáng tạo thêm phải tắt trong bench).
+
 ## [1.3] — Phase 4, TICKET-04 "Bình minh: phát hành v1.0.0" (bản phát hành v1.0.0)
 
 Spec + AC: [docs/phases/phase-4.md](docs/phases/phase-4.md). Quyết định đo hiệu năng bản web: [ADR 0002](docs/adr/0002-web-benchmark-and-local-server.md).

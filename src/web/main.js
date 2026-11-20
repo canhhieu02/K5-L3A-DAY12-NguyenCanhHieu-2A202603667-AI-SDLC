@@ -496,7 +496,7 @@ window.__ddl = { fps: () => (fpsAcc.totalTime > 0 ? fpsAcc.total / fpsAcc.totalT
 let bench = null;
 function startBench(seed, duration) {
   game = createBenchGame(seed);
-  view.build(game.map);
+  view.build(game.map, { decor: false }); // TICKET-04: tắt phần trang trí sáng tạo thêm trong cảnh bench
   mode = 'bench';
   for (const s of document.querySelectorAll('.screen')) s.classList.add('hidden');
   $('hud').classList.add('hidden');

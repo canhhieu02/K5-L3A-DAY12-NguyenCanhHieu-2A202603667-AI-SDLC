@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { TUNING } from '../core/tuning.js';
 import { FUEL_UNIT, hasSafeZone } from '../core/world.js';
 import { PALETTE as C, ambientIntensity, paletteFor, blinkOn } from './palette.js';
+import { createRng } from '../core/rng.js';
+import { buildDecor, rockyIsland } from './decor.js';
 
 const lambert = (color, extra = {}) => new THREE.MeshLambertMaterial({ color, ...extra });
 
@@ -55,25 +57,86 @@ export class WorldView {
     this.dangerColor = P.uiDanger;
   }
 
-  // ---------- Mây: áo #E8E2D0, khăn đỏ, nón lá, đèn lồng nhỏ ----------
+  // ---------- Mây: áo #E8E2D0, khăn đỏ, nón lá có vành, tay cầm đèn lồng nhỏ; mặt nhìn về +Z cục bộ ----------
   buildMay() {
     const may = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.33, 0.65, 4, 12), lambert(C.mayShirt));
-    body.position.y = 0.68;
-    const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.08, 8, 20), lambert(C.mayScarf));
+    const skin = lambert(0xf0c8a0);
+    const pants = lambert(0x3a3550);
+    const shirt = lambert(C.mayShirt);
+    const scarfMat = lambert(C.mayScarf);
+    const limb = (geo, mat, x, y) => { // khớp xoay ở đầu trên chi
+      const pivot = new THREE.Group();
+      pivot.position.set(x, y, 0);
+      const m = new THREE.Mesh(geo, mat);
+      m.position.y = -geo.parameters.length / 2 - geo.parameters.radius;
+      pivot.add(m);
+      return pivot;
+    };
+    const legL = limb(new THREE.CapsuleGeometry(0.09, 0.32, 4, 8), pants, -0.12, 0.52);
+    const legR = limb(new THREE.CapsuleGeometry(0.09, 0.32, 4, 8), pants, 0.12, 0.52);
+    const torso = new THREE.Group();
+    torso.position.y = 0.5;
+    // áo dài tới hông: thân hình chóp cụt
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 0.55, 14), shirt);
+    body.position.y = 0.3;
+    const belt = new THREE.Mesh(new THREE.TorusGeometry(0.255, 0.035, 6, 18), lambert(0x6b4a2f));
+    belt.rotation.x = Math.PI / 2;
+    belt.position.y = 0.12;
+    const armL = limb(new THREE.CapsuleGeometry(0.065, 0.3, 4, 8), shirt, -0.27, 0.52);
+    const armR = limb(new THREE.CapsuleGeometry(0.065, 0.3, 4, 8), shirt, 0.27, 0.52);
+    armL.rotation.z = 0.15;
+    armR.rotation.z = -0.25;
+    // đầu: mặt, tóc, má hồng, mắt
+    const head = new THREE.Group();
+    head.position.y = 0.78;
+    const face = new THREE.Mesh(new THREE.SphereGeometry(0.21, 16, 12), skin);
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.55), lambert(0x1c1410));
+    hair.rotation.x = -0.35;
+    const eyeGeo = new THREE.SphereGeometry(0.028, 8, 6);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1a1014 });
+    const e1 = new THREE.Mesh(eyeGeo, eyeMat);
+    const e2 = new THREE.Mesh(eyeGeo, eyeMat);
+    e1.position.set(-0.075, 0.01, 0.19);
+    e2.position.set(0.075, 0.01, 0.19);
+    const cheekMat = new THREE.MeshBasicMaterial({ color: 0xf08a8a, transparent: true, opacity: 0.6 });
+    const c1 = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), cheekMat);
+    const c2 = c1.clone();
+    c1.position.set(-0.12, -0.06, 0.16);
+    c2.position.set(0.12, -0.06, 0.16);
+    // nón lá: chóp + vành + quai đỏ
+    const hatMat = lambert(0xe2cd88);
+    const hat = new THREE.Mesh(new THREE.ConeGeometry(0.62, 0.36, 28, 1, true), new THREE.MeshLambertMaterial({ color: 0xe2cd88, side: THREE.DoubleSide }));
+    hat.position.y = 0.3;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.61, 0.02, 6, 32), hatMat);
+    rim.rotation.x = Math.PI / 2;
+    rim.position.y = 0.12;
+    const ribs = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.35, 14, 1, true), new THREE.MeshBasicMaterial({ color: 0xa8904a, wireframe: true }));
+    ribs.position.y = 0.305;
+    head.add(face, hair, e1, e2, c1, c2, hat, rim, ribs);
+    // khăn đỏ quàng cổ + đuôi khăn bay phía sau
+    const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.06, 8, 20), scarfMat);
     scarf.rotation.x = Math.PI / 2;
-    scarf.position.y = 1.1;
-    const tail = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.4, 0.05), lambert(C.mayScarf));
-    tail.position.set(0, 0.9, -0.3);
-    const hat = new THREE.Mesh(new THREE.ConeGeometry(0.75, 0.38, 24), lambert(0xd9c27a));
-    hat.position.y = 1.52;
-    const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 8), new THREE.MeshBasicMaterial({ color: C.lanternLit }));
-    lamp.position.set(0.65, 1.2, 0);
+    scarf.position.y = 0.6;
+    const tail = new THREE.Group();
+    tail.position.set(0.05, 0.6, -0.15);
+    const tailMesh = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.04, 0.42), scarfMat);
+    tailMesh.position.z = -0.2;
+    tail.add(tailMesh);
+    torso.add(body, belt, armL, armR, head, scarf, tail);
+    // đèn lồng nhỏ trên tay phải
+    const lampGroup = new THREE.Group();
+    lampGroup.position.set(0, -0.48, 0.08);
+    const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 8), new THREE.MeshBasicMaterial({ color: C.lanternLit }));
+    lamp.scale.y = 1.25;
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 0.04, 8), lambert(0x6b4a2f));
+    cap.position.y = 0.15;
     const light = new THREE.PointLight(C.lanternLit, 6, 12, 1.6);
-    light.position.set(0.65, 1.3, 0);
-    may.add(body, scarf, tail, hat, lamp, light);
+    lampGroup.add(lamp, cap, light);
+    armR.add(lampGroup);
+    may.add(legL, legR, torso);
     this.may = may;
-    this.mayParts = { lamp, light, scarf };
+    this.mayParts = { lamp, light, scarf, legL, legR, armL, armR, torso, tail, head };
+    this.walkPhase = 0;
     this.scene.add(may);
     // vòng hiệu lực Bùa Gió
     this.charmAura = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.04, 6, 32), new THREE.MeshBasicMaterial({ color: C.charm }));
@@ -102,7 +165,8 @@ export class WorldView {
   }
 
   // ---------- địa hình theo map ----------
-  build(map) {
+  /** decor = false (cảnh bench TICKET-04): bỏ trang trí sáng tạo thêm (cây, núi xa, mây, cỏ, vách đá). */
+  build(map, { decor = true } = {}) {
     if (this.level) {
       this.scene.remove(this.level);
       this.level.traverse((o) => { o.geometry?.dispose(); });
@@ -116,7 +180,9 @@ export class WorldView {
     sea.rotation.x = -Math.PI / 2;
     sea.position.y = -8;
     L.add(sea);
+    const rng = createRng(77 + map.night);
     const island = (x, z, r, h = 6) => {
+      if (decor) { L.add(rockyIsland(x, z, r, rng)); return; }
       const base = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.75, h, 64), lambert(C.sand));
       base.position.set(x, -h / 2 - 0.02, z);
       const top = new THREE.Mesh(new THREE.CircleGeometry(r - 1.2, 64), lambert(C.grass));
@@ -176,6 +242,7 @@ export class WorldView {
       }
     }
     for (const p of map.pads) padMesh(p);
+    if (decor) L.add(buildDecor(map));
     this.scene.add(L);
     this.level = L;
     this.mapRadius = map.radius;
@@ -246,6 +313,29 @@ export class WorldView {
     this.may.visible = p.waitTicks === 0 && (p.invulnTicks === 0 || Math.floor(time * 12) % 2 === 0);
     this.mayParts.light.intensity = 3 + p.carried * 0.9;
     this.mayParts.lamp.material.color.setHex(p.carried > 0 ? C.lanternLit : C.lanternOff);
+    // hoạt ảnh: bước chân theo tốc độ ngang, co chân khi trên không, khăn bay
+    {
+      const P = this.mayParts;
+      const speed = Math.hypot(p.vel[0], p.vel[2]);
+      const dtv = Math.min(0.1, Math.max(0, time - (this.lastTime ?? time)));
+      this.lastTime = time;
+      this.walkPhase += dtv * speed * 2.2;
+      const k = Math.min(1, speed / 6);
+      const sw = Math.sin(this.walkPhase) * 0.7 * k;
+      if (p.grounded) {
+        P.legL.rotation.x = sw; P.legR.rotation.x = -sw;
+        P.armL.rotation.x = -sw * 0.8; P.armR.rotation.x = sw * 0.5;
+        P.torso.position.y = 0.5 + Math.abs(Math.sin(this.walkPhase)) * 0.05 * k;
+      } else {
+        P.legL.rotation.x = -0.6; P.legR.rotation.x = 0.3;
+        P.armL.rotation.x = -1.1; P.armR.rotation.x = -0.4;
+        P.torso.position.y = 0.5;
+      }
+      P.torso.rotation.x = 0.12 * k; // nghiêng người khi chạy
+      P.tail.rotation.x = 0.25 + 0.5 * k + Math.sin(time * 9) * 0.15;
+      P.tail.rotation.y = Math.sin(time * 5.3) * 0.25;
+      P.head.rotation.y = Math.sin(time * 0.7) * 0.1 * (1 - k); // đứng yên thì ngó quanh
+    }
     this.charmAura.visible = p.charmTicks > 0;
     this.charmAura.position.set(p.pos[0], p.pos[1] + 0.1, p.pos[2]);
     this.charmAura.rotation.z = time * 3;
