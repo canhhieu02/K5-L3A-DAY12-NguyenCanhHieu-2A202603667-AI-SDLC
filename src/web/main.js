@@ -369,6 +369,15 @@ const DEMO = {
       { id: 'L5', pos: [6, 0, 18], ever_lit: true }],
     shades: [{ id: 'S1', pos: [-7.2, 1, 17], state: 'drain', target_lantern_id: 'L2' }],
   },
+  // L1 còn 4 dầu cạnh Mây: ~4 s sau tắt → bấm E thắp lại (5) → bấm E lần nữa để châm dầu
+  out: {
+    random_shades: false, random_drifters: false, wind_enabled: false,
+    player: { pos: [0, 0, 23.5], carried: 9 },
+    lanterns: [{ id: 'L1', lit: true, fuel: 4 }],
+  },
+  // Đêm rút còn 12 s: 3/5 đèn sáng → thắng bình minh / 2/5 → thua bình minh
+  win: { random_shades: false, time_left_s: 12, lanterns: [{ id: 'L1', lit: true, fuel: 60 }, { id: 'L2', lit: true }, { id: 'L5', lit: true, fuel: 35 }] },
+  lose: { random_shades: false, time_left_s: 12, lanterns: [{ id: 'L1', lit: true }, { id: 'L2', lit: true }] },
 };
 if ([1, 2, 3].includes(qNight)) startNight(qNight, false, DEMO[query.get('demo')] ?? null);
 if (query.get('cb') === '1') applyPalette(true); // xem nhanh bảng màu dễ phân biệt (không lưu)
